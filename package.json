@@ -1,0 +1,11 @@
+{
+  "name": "thread",
+  "scripts": {
+    "test": "./node_modules/.bin/mocha-phantomjs test/runner.html"
+  },
+  "devDependencies": {
+    "chai": "^1.9.1",
+    "mocha-phantomjs": "^3.4.1",
+    "phantomjs": "^1.9.7-9"
+  }
+}
