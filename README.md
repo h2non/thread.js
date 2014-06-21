@@ -58,3 +58,6 @@ $ make test
 ## License
 
 [MIT](http://opensource.org/licenses/MIT) © Tomas Aparicio
+
+[travis]: http://travis-ci.org/h2non/thread.js
+[gemnasium]: https://gemnasium.com/h2non/thread.js
