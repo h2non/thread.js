@@ -1,7 +1,11 @@
 {
   "name": "thread",
+  "private": true,
   "scripts": {
     "test": "./node_modules/.bin/mocha-phantomjs test/runner.html"
+  },
+  "dependencies": {
+    "promitto": "^0.1.1"
   },
   "devDependencies": {
     "chai": "^1.9.1",

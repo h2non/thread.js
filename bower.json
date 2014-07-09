@@ -1,4 +1,34 @@
 {
   "name": "thread",
-  "version": "0.1.0"
+  "description": "Tiny library for parallel thread-based computing in the browser",
+  "version": "0.1.0",
+  "license": "MIT",
+  "repository": "h2non/thread.js",
+  "author": "Tomas Aparicio",
+  "main": "./thread.js",
+  "keywords": [
+    "parallel",
+    "worker",
+    "webworker",
+    "process",
+    "fork",
+    "multiprocess",
+    "child",
+    "process",
+    "multicore"
+  ],
+  "ignore": [
+    "**/.*",
+    ".*",
+    "*.md",
+    "src",
+    "lib",
+    "test",
+    "Makefile",
+    ".editorconfig",
+    ".gitignore",
+    ".travis.yml",
+    ".npmignore",
+    "package.json"
+  ]
 }
