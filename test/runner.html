@@ -7,10 +7,14 @@
     <div id="mocha"></div>
     <script src="../node_modules/mocha-phantomjs/node_modules/mocha/mocha.js"></script>
     <script src="../node_modules/chai/chai.js"></script>
+    <script src="../thread.js"></script>
     <script>
-      mocha.ui('bdd');
-      mocha.reporter('html');
-      expect = chai.expect;
+      mocha.ui('bdd')
+      mocha.reporter('html')
+      expect = chai.expect
+      browserRequire = function (name) {
+        return window[name]
+      }
     </script>
     <script src="thread.js"></script>
     <script>

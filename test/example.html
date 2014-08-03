@@ -1,0 +1,47 @@
+<html>
+  <head>
+    <meta charset="utf-8">
+  </head>
+  <body>
+    <script src="../thread.js"></script>
+    <script>
+      // simple example passing custom context
+      var job = thread({
+        env: { error: true }
+      })
+
+      var task = job.run(function (done) {
+        setTimeout(function () {
+          if (env.error) {
+            done('invalid')
+          }
+        }, 1)
+      })
+
+      setTimeout(function () {
+        task.catch(function (err) {
+          console.log(err)
+        })
+      }, 100)
+
+      // load remote script dependency
+      var job2 = thread({
+        require: ['http://cdn.rawgit.com/h2non/hu/0.1.1/hu.js'],
+        env: { x: 2 }
+      })
+
+      var task2 = job2.run(function (done) {
+        var sum = env.x * 2
+        hu.defer(function () {
+          if (env.x) {
+            done('invalid', sum)
+          }
+        }, 100)
+      }).then(function (sum) {
+        task2.then(function (data) {
+          console.log(data)
+        })
+      })
+    </script>
+  </body>
+</html>

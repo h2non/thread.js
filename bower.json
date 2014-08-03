@@ -1,6 +1,6 @@
 {
   "name": "thread",
-  "description": "Tiny library for parallel thread-based computing in the browser",
+  "description": "The definitive library for real parallel non-blocking processing in the browser",
   "version": "0.1.0",
   "license": "MIT",
   "repository": "h2non/thread.js",
@@ -10,11 +10,14 @@
     "parallel",
     "worker",
     "webworker",
+    "processing",
     "process",
     "fork",
+    "compute",
+    "non-blocking",
+    "blocking",
     "multiprocess",
     "child",
-    "process",
     "multicore"
   ],
   "ignore": [
@@ -30,5 +33,8 @@
     ".travis.yml",
     ".npmignore",
     "package.json"
-  ]
+  ],
+  "devDependencies": {
+    "hu": "~0.1.1"
+  }
 }
