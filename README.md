@@ -1,4 +1,4 @@
-# thread.js [![Build Status](https://api.travis-ci.org/h2non/thread.js.svg?branch=master)][travis]  <img src="http://benschwarz.github.io/bower-badges/badge@2x.png" width="130" height="25">
+# thread.js [![Build Status](https://api.travis-ci.org/h2non/thread.js.svg?branch=master)][travis]
 
 [![browser support](https://ci.testling.com/h2non/thread.js.png)](https://ci.testling.com/h2non/thread.js)
 
