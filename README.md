@@ -81,15 +81,15 @@ task.then(function (array) {
 })
 ```
 
-### Web Workers resources
+## Web Workers resources
 
 - [Web Workers basics](https://developer.mozilla.org/en-US/docs/Web/Guide/Performance/Using_web_workers)
 - [Web Workers tutorial](http://www.html5rocks.com/es/tutorials/workers/basics/)
 - [Functions available to workers as global scope](https://developer.mozilla.org/en-US/docs/Web/API/Worker/Functions_and_classes_available_to_workers)
 
-### API
+## API
 
-#### thread([options])
+### thread([options])
 Return: `Thread` Alias: `thread.create`
 
 Supported options:
@@ -98,51 +98,51 @@ Supported options:
 - **require** `array` Path list of scripts to load
 - **namespace** `string` Global namespace to allocate the scope environment. Default to `env`
 
-##### Thread.run(fn, env)
+#### Thread.run(fn, env)
 Return: `Task` Alias: `exec`
 
 Run a function in the thread context, optionally passing a custom environment
 
-##### Thread.require(sources)
+#### Thread.require(sources)
 Return: `Thread`
 
 Add required scripts or functions to bind to the thread isolated context
 
-##### Thread.kill()
+#### Thread.kill()
 Return: `Thread` Alias: `terminate`
 
 Kill the thread current thread. All the cached data and config will be flushed
 
-##### Thread.start([options])
+#### Thread.start([options])
 Return: `Thread`
 
 Start (or restart) the current thread.
 If the thread was previously killed, you can reuse it calling this method
 
-#### thread.Task(thread)
+### thread.Task(thread)
 Return: `Task`
 
 Create a new task in the given thread
 
 Normally you don't need to call it directly, it will done via `Thread.run()` factory
 
-##### Task.then(successFn [, errorFn])
+#### Task.then(successFn [, errorFn])
 Return: `Task`
 
 Add success and error (optionally) result handlers for the current task
 
-##### Task.catch(errorFn)
+#### Task.catch(errorFn)
 Return: `Task`
 
 Add an error handlers for the current task
 
-##### Task.finally(finalFn)
+#### Task.finally(finalFn)
 Return: `Task`
 
 Add a final handler for the current task.
 It will be ejecuted when the task finished with `success` or `error` state
 
-##### Task.flush()
+#### Task.flush()
 Return: `Task`
 
 Flush cached result data and set the initial task state
