@@ -44,7 +44,7 @@ Cross-browser support guaranteed thanks to passing tests in [Testling](https://c
 ### Basic usage
 
 If `require` is available, you must use it to fetch the module.
-Otherwise it will be available in the global scope
+Otherwise it will be available in as global
 ```js
 var thread = require('thread')
 ```
@@ -117,9 +117,14 @@ Return: `Thread`
 Add required scripts or functions to bind to the thread isolated context
 
 #### Thread.bind(env)
-Return: `Thread`
+Return: `Thread` Alias: `push`
 
 Bind a new context to the isolated thread
+
+#### Thread.flush()
+Return: `Thread`
+
+Flush the existent thread environment scope
 
 #### Thread.send(msg)
 Return: `Thread`

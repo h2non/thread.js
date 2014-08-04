@@ -7,7 +7,7 @@ function Task(thread) {
   this.thread = thread
   this.worker = thread._worker
   this.env = {}
-  this.memoized = null
+  this.time = this.memoized = null
   this.listeners = {
     error: [],
     success: [],
@@ -67,6 +67,7 @@ Task.prototype.setEnv = function (env) {
 
 Task.prototype.run = function (fn, env) {
   var self = this
+  this.time = new Date().getTime()
 
   if (!_.isFn(fn)) {
     throw new TypeError('first argument must be a function')
