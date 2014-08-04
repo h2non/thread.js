@@ -8,7 +8,8 @@
 </tr>
 </table>
 
-**thread.js** is a small library that **simplifies JavaScript parallel computing in browsers** environments
+**thread.js** is a small library that **simplifies JavaScript parallel computing in browsers** environments.
+Welcome to the multi-thread world in JavaScript
 
 It uses the [Web Workers API](http://en.wikipedia.org/wiki/Web_worker),
 but provides fallback support for older browsers based on `iframe` hacking
