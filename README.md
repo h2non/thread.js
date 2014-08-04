@@ -92,15 +92,6 @@ task.then(function (array) {
 #### thread([options])
 Return: `Thread` Alias: `thread.create`
 
-```js
-var thread = thread({
-  end: { x: 2 },
-  require: [
-    'http://cdn.rawgit.com/h2non/hu/0.1.1/hu.js'
-  ]
-})
-```
-
 Supported options:
 
 - **env** `object` Custom environment to use in the isolated thread scope
@@ -108,17 +99,28 @@ Supported options:
 - **namespace** `string` Global namespace to allocate the scope environment. Default to `env`
 
 ##### Thread.run(fn, env)
-Returns: `Task` Alias: `exec`
+Return: `Task` Alias: `exec`
 
 Run a function in the thread context, optionally passing a custom environment
 
 ##### Thread.require(sources)
-Returns: `Thread`
+Return: `Thread`
 
-Require files
+Add required scripts or functions to bind to the thread isolated context
+
+##### Thread.kill()
+Return: `Thread` Alias: `terminate`
+
+Kill the thread current thread. All the cached data and config will be flushed
+
+##### Thread.start([options])
+Return: `Thread`
+
+Start (or restart) the current thread.
+If the thread was previously killed, you can reuse it calling this method
 
 #### thread.Task(thread)
-Returns: `Task`
+Return: `Task`
 
 Create a new task in the given thread
 
@@ -139,6 +141,11 @@ Return: `Task`
 
 Add a final handler for the current task.
 It will be ejecuted when the task finished with `success` or `error` state
+
+##### Task.flush()
+Return: `Task`
+
+Flush cached result data and set the initial task state
 
 ## Contributing
 
