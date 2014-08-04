@@ -359,6 +359,7 @@ Thread.prototype.send = function (msg) {
 
 Thread.prototype.terminate = Thread.prototype.kill = function () {
   if (!this._terminated) {
+    this.options = {}
     this._terminated = true
     this._worker.terminate()
   }
@@ -367,6 +368,7 @@ Thread.prototype.terminate = Thread.prototype.kill = function () {
 
 Thread.prototype.start = function (options) {
   if (this._terminated) {
+    this._setOptions(options)
     this._terminated = false
     this._create()
   }
