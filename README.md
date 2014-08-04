@@ -145,6 +145,12 @@ Create a new task in the given thread
 
 Normally you don't need to call it directly, it will done via `Thread.run()` factory
 
+#### Task.maxTaskDelay
+Value: `number` Default: `5000`
+
+Maximum delay task time in miliseconds.
+If the task computation exceed this, it will be exit as error
+
 #### Task.then(successFn [, errorFn])
 Return: `Task`
 
