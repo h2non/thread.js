@@ -110,6 +110,17 @@ Return: `Thread`
 
 Add required scripts or functions to bind to the thread isolated context
 
+#### Thread.bind(env)
+Return: `Thread`
+
+Bind a new context to the isolated thread
+
+#### Thread.send(msg)
+Return: `Thread`
+
+Send a message directly to the current thread.
+Useful for specific use cases, but it's preferably do not use it
+
 #### Thread.kill()
 Return: `Thread` Alias: `terminate`
 
