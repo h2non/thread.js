@@ -12,7 +12,7 @@ module.exports = Thread
 function Thread(options) {
   this.options = {}
   this._terminated = false
-  this.maxTaskDelay = 1000
+  this.maxTaskDelay = 5 * 1000
   this.id = _.generateUUID()
   this._setOptions(options)
   this._create()

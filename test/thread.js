@@ -154,12 +154,13 @@ describe('thread', function () {
   describe('long computation delay error', function () {
     var task = null
     var job = thread()
+    job.maxTaskDelay = 500
 
     it('should run a task', function () {
       task = job.run(function (done) {
         setTimeout(function () {
           done()
-        }, 1500)
+        }, 1000)
       })
     })
 
