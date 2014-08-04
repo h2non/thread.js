@@ -11,7 +11,7 @@
 **thread.js** is a small library that **simplifies JavaScript parallel computing in browsers** environments
 
 It uses the [Web Workers API](http://en.wikipedia.org/wiki/Web_worker),
-but provides fallback support for older browsers using `iframes`
+but provides fallback support for older browsers based on `iframe` hacking
 
 ## Installation
 
