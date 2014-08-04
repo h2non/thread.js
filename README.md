@@ -43,6 +43,11 @@ Cross-browser support guaranteed thanks to passing tests in [Testling](https://c
 
 ### Basic usage
 
+If RequireJS is used, you must require it. Otherwise it will be available in the global scope
+```js
+var thread = require('thread')
+```
+
 Create a new thread with custom scope and library dependencies
 ```js
 var job = thread({
