@@ -33,7 +33,7 @@ Or loading the script remotely (just for testing or development)
 
 ### Environments
 
-Cross-browser support guaranteed passing tests in [Testling](https://ci.testling.com/)
+Cross-browser support guaranteed thanks to passing tests in [Testling](https://ci.testling.com/)
 
 - Chrome >= 5
 - Firefox >= 3
@@ -85,8 +85,8 @@ task.then(function (array) {
 
 ## Web Workers resources
 
-- [Web Workers basics](https://developer.mozilla.org/en-US/docs/Web/Guide/Performance/Using_web_workers)
-- [Web Workers tutorial](http://www.html5rocks.com/es/tutorials/workers/basics/)
+- [Basics](https://developer.mozilla.org/en-US/docs/Web/Guide/Performance/Using_web_workers)
+- [HTML5Rocks Tutorial](http://www.html5rocks.com/es/tutorials/workers/basics/)
 - [Functions available to workers as global scope](https://developer.mozilla.org/en-US/docs/Web/API/Worker/Functions_and_classes_available_to_workers)
 
 ## API
