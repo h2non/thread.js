@@ -118,7 +118,7 @@ function Task(thread) {
   this.thread = thread
   this.worker = thread._worker
   this.env = {}
-  this.memoized = null
+  this.time = this.memoized = null
   this.listeners = {
     error: [],
     success: [],
@@ -178,6 +178,7 @@ Task.prototype.setEnv = function (env) {
 
 Task.prototype.run = function (fn, env) {
   var self = this
+  this.time = new Date().getTime()
 
   if (!_.isFn(fn)) {
     throw new TypeError('first argument must be a function')
@@ -277,6 +278,7 @@ function Thread(options) {
   this.maxTaskDelay = 5 * 1000
   this.id = _.generateUUID()
   this._setOptions(options)
+  this._tasks = []
   this._create()
 }
 
@@ -337,17 +339,36 @@ Thread.prototype.require = function (name, fn) {
 
 Thread.prototype.run = Thread.prototype.exec = function (fn, env) {
   var task
+  if (!_.isFn(fn)) {
+    throw new TypeError('you must pass a function argument')
+  }
+
   if (fn instanceof Task) {
     task = fn
   } else {
     task = new Task(this)
   }
+  this._tasks.push(task)
+  task.finally(function () {
+
+  })
   _.defer(function () { task.run(fn, env) })
   return task
 }
 
-Thread.prototype.bind = function (env) {
+Thread.prototype.bind = Thread.prototype.push = function (env) {
   this.send({ type: 'env', data: env })
+  return this
+}
+
+Thread.prototype.flush = function () {
+  this.send({ type: 'flush' })
+  this.options.env = {}
+  return this
+}
+
+Thread.prototype.flushTasks = function () {
+  this._tasks.splice(0)
   return this
 }
 
@@ -366,13 +387,21 @@ Thread.prototype.terminate = Thread.prototype.kill = function () {
   return this
 }
 
-Thread.prototype.start = function (options) {
+Thread.prototype.start = Thread.prototype.init = function (options) {
   if (this._terminated) {
     this._setOptions(options)
     this._terminated = false
     this._create()
   }
   return this
+}
+
+Thread.prototype.pending = function () {
+  return this._tasks.length
+}
+
+Thread.prototype.isRunning = function () {
+  return this._tasks.length > 0
 }
 
 Thread.Task = Task
