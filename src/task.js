@@ -65,7 +65,7 @@ Task.prototype.setEnv = function (env) {
   return this
 }
 
-Task.prototype.run = function (fn, env) {
+Task.prototype.run = function (fn, env, args) {
   var self = this
   this.time = new Date().getTime()
 
@@ -73,7 +73,7 @@ Task.prototype.run = function (fn, env) {
     throw new TypeError('first argument must be a function')
   }
 
-  var env = _.extend({}, this.env, env)
+  env = _.extend({}, this.env, env)
   this.memoized = null
 
   var maxDelay = this.thread.maxTaskDelay
@@ -97,7 +97,8 @@ Task.prototype.run = function (fn, env) {
     id: this.id,
     type: 'run',
     env: env,
-    src: fn.toString()
+    src: fn.toString(),
+    args: args
   })
 
   return this

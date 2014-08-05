@@ -6,6 +6,7 @@ var workerSrc = require('./worker')
 var eventMethod = window.addEventListener ? 'addEventListener' : 'attachEvent'
 var messageEvent = eventMethod === 'attachEvent' ? 'onmessage' : 'message'
 var addEventListener = window[eventMethod]
+var removeEventListener = window[window.removeEventListener ? 'removeEventListener' : 'detachEvent']
 
 module.exports = FakeWorker
 
@@ -17,7 +18,7 @@ function FakeWorker(id) {
   this._initialize()
 }
 
-FakeWorker.prototype._create = function() {
+FakeWorker.prototype._create = function () {
   var iframe = this.iframe = document.createElement('iframe')
   if (!iframe.style) iframe.style = {}
   iframe.style.display = 'none'
@@ -25,24 +26,35 @@ FakeWorker.prototype._create = function() {
   document.body.appendChild(iframe)
 }
 
-FakeWorker.prototype._subscribeListeners = function(type) {
+FakeWorker.prototype._subscribeListeners = function (type) {
   var listeners = this.listeners
   if (eventMethod === 'attachEvent') type = 'on' + type;
-  addEventListener(type, function(e) {
+
+  function eventHandler(e) {
     if (e.data && e.data.owner === 'thread.js') {
       if (listeners[type]) {
-        _.each(listeners[type], function(fn) { fn(e) })
+        _.each(listeners[type], function (fn) {
+          if (_.isFn(fn)) fn(e)
+        })
       }
     }
-  })
+  }
+
+  this._eventHandler = eventHandler
+  addEventListener(type, eventHandler)
 }
 
-FakeWorker.prototype._setupListeners = function() {
+FakeWorker.prototype._setupListeners = function () {
   this._subscribeListeners('message')
   this._subscribeListeners('error')
 }
 
-FakeWorker.prototype._getWindow = function() {
+FakeWorker.prototype._unsubscribeListeners = function () {
+  removeEventListener('error', this._eventHandler)
+  removeEventListener('message', this._eventHandler)
+}
+
+FakeWorker.prototype._getWindow = function () {
   var win = this.iframe.contentWindow
   var wEval = win.eval, wExecScript = win.execScript
   if (!wEval && wExecScript) {
@@ -53,24 +65,23 @@ FakeWorker.prototype._getWindow = function() {
   return win
 }
 
-FakeWorker.prototype._initialize = function(msg) {
+FakeWorker.prototype._initialize = function (msg) {
   var win = this._getWindow()
   win.eval.call(win, _.getSource(workerSrc))
-  //win.postMessage('', getLocation())
 }
 
-FakeWorker.prototype.addEventListener = function(type, fn) {
+FakeWorker.prototype.addEventListener = function (type, fn) {
   var pool = this.listeners[type] = this.listeners[type] || []
-  pool.push(fn)
+  if (_.isFn(fn)) pool.push(fn)
 }
 
-FakeWorker.prototype.removeEventListener = function(type, fn) {
-  var pool = this.listeners[type]
+FakeWorker.prototype.removeEventListener = function (type, fn) {
+  var index, pool = this.listeners[type]
   if (pool) {
     if (_.isFn(fn)) {
       pool.splice(0, pool.length)
     } else {
-      var index = pool.indexOf(fn)
+      index = pool.indexOf(fn)
       if (~index) {
         pool.splice(index, 1)
       }
@@ -78,14 +89,15 @@ FakeWorker.prototype.removeEventListener = function(type, fn) {
   }
 }
 
-FakeWorker.prototype.postMessage = function(msg) {
+FakeWorker.prototype.postMessage = function (msg) {
   var win = this._getWindow()
   msg.origin = getLocation()
   win.postMessage(msg, msg.origin)
 }
 
-FakeWorker.prototype.terminate = function() {
+FakeWorker.prototype.terminate = function () {
   this.listeners = null
+  this._unsubscribeListeners()
   document.body.removeChild(this.iframe)
 }
 
@@ -176,7 +188,7 @@ Task.prototype.setEnv = function (env) {
   return this
 }
 
-Task.prototype.run = function (fn, env) {
+Task.prototype.run = function (fn, env, args) {
   var self = this
   this.time = new Date().getTime()
 
@@ -184,7 +196,7 @@ Task.prototype.run = function (fn, env) {
     throw new TypeError('first argument must be a function')
   }
 
-  var env = _.extend({}, this.env, env)
+  env = _.extend({}, this.env, env)
   this.memoized = null
 
   var maxDelay = this.thread.maxTaskDelay
@@ -208,7 +220,8 @@ Task.prototype.run = function (fn, env) {
     id: this.id,
     type: 'run',
     env: env,
-    src: fn.toString()
+    src: fn.toString(),
+    args: args
   })
 
   return this
@@ -266,9 +279,8 @@ var workerSrc = require('./worker')
 var Task = require('./task')
 var FakeWorker = require('./fake-worker')
 
-var global = window
-var URL = global.URL || global.webkitURL
-var hasWorkers = _.isFn(global.Worker)
+var URL = window.URL || window.webkitURL
+var hasWorkers = _.isFn(window.Worker)
 
 module.exports = Thread
 
@@ -297,7 +309,7 @@ Thread.prototype._create = function () {
     try {
       blob = new Blob([src], { type: 'text/javascript' })
     } catch (e) {
-      var BlobBuilder = global.BlobBuilder || global.WebKitBlobBuilder || global.MozBlobBuilder;
+      var BlobBuilder = window.BlobBuilder || window.WebKitBlobBuilder || window.MozBlobBuilder
       blob = new BlobBuilder()
       blob.append(src)
       blob = blob.getBlob()
@@ -337,14 +349,20 @@ Thread.prototype.require = function (name, fn) {
   }
 }
 
-Thread.prototype.run = Thread.prototype.exec = function (fn, env) {
+Thread.prototype.run = Thread.prototype.exec = function (fn, env, args) {
   var task, index, self = this
-  if (_.isObj(fn)) {
-    env = fn
+  var tasks = self._tasks
+
+  if (_.isArr(fn)) {
+    args = fn
     fn = arguments[1]
   }
+  if (_.isArr(env)) {
+    args = env
+    env = arguments[2]
+  }
   if (!_.isFn(fn)) {
-    throw new TypeError('you must pass a function argument')
+    throw new TypeError('missing function argument')
   }
 
   if (fn instanceof Task) {
@@ -353,11 +371,11 @@ Thread.prototype.run = Thread.prototype.exec = function (fn, env) {
     task = new Task(this)
   }
 
-  index = this._tasks.push(task)
+  tasks.push(task)
   task.finally(function () {
-    self._tasks.splice(index, 1)
+    tasks.splice(tasks.indexOf(task), 1)
   })
-  _.defer(function () { task.run(fn, env) })
+  _.defer(function () { task.run(fn, env, args) })
   return task
 }
 
@@ -373,6 +391,9 @@ Thread.prototype.flush = function () {
 }
 
 Thread.prototype.flushTasks = function () {
+  _.each(this.tasks, function (task) {
+    task.flush()
+  })
   this._tasks.splice(0)
   return this
 }
@@ -490,7 +511,7 @@ module.exports = worker
 function worker() {
   var self = this
 
-  function evalExpr(expr) {
+  function $$evalExpr(expr) {
     var fn = null
     eval('fn = ' + expr)
     return fn
@@ -500,6 +521,7 @@ function worker() {
     var namespace = 'env'
     var isWorker = self.document === undefined
     var toStr = Object.prototype.toString
+    var slice = Array.prototype.slice
     var eventMethod = self.addEventListener ? 'addEventListener' : 'attachEvent'
     var messageEvent = eventMethod === 'attachEvent' ? 'onmessage' : 'message'
     var importFn = isWorker ? importScripts : appendScripts
@@ -513,6 +535,19 @@ function worker() {
 
     function isArr(o) {
       return o && Array.isArray ? Array.isArray(o) : toStr.call(o) === '[object Array]'
+    }
+
+    function extend(origin, target) {
+      var i, l, key, args = slice.call(arguments).slice(1)
+      for (i = 0, l = args.length; i < l; i += 1) {
+        target = args[i]
+        if (isObj(target)) {
+          for (key in target) if (target.hasOwnProperty(key)) {
+            origin[key] = target[key]
+          }
+        }
+      }
+      return origin
     }
 
     function each(obj, fn) {
@@ -534,12 +569,11 @@ function worker() {
 
     function waitReady() {
       var dom = self.document
-
       if (dom.readyState === 'complete') {
         ready = true
       } else {
-        self.document.onreadystatechange = function() {
-          if (document.readyState === 'complete') {
+        dom.onreadystatechange = function() {
+          if (dom.readyState === 'complete') {
             ready = true
           }
         }
@@ -564,14 +598,14 @@ function worker() {
     }
 
     function appendScripts() {
-      var args = Array.prototype.slice.call(arguments)
-      for (var i = 0; i < args.length; i += 1) {
+      var i, l, args = Array.prototype.slice.call(arguments)
+      for (i = 0, l = args.length; i < l; i += 1) {
         if (args[i]) appendScript(args[i])
       }
     }
 
     function scriptsLoadTimer() {
-      intervalId = setInterval(function() {
+      intervalId = setInterval(function () {
         if (ready && !scriptsLoad.length) {
           clearInterval(intervalId)
           each(queue, function (fn) { fn() })
@@ -644,11 +678,15 @@ function worker() {
     }
 
     function process(msg) {
-      var fn = evalExpr(msg.src)
-      if (fn.length > 0) {
-        fn.call(self, done(msg))
+      var args = msg.args || []
+      var fn = $$evalExpr(msg.src)
+      var ctx = isObj(msg.env) ? msg.env : self[namespace]
+
+      if (fn.length === (args.length + 1)) {
+        args.push(done(msg))
+        fn.apply(ctx, args)
       } else {
-        fn = fn.call(self)
+        fn = fn.apply(ctx, args)
         sendSuccess(msg, fn)
       }
     }
@@ -682,9 +720,7 @@ function worker() {
     }
 
     function extendEnv(data) {
-      if (isObj(data.env)) {
-        extend(self[namespace], data.env)
-      }
+      extend(self[namespace || namespace], data.env)
     }
 
     function onMessage(ev) {
@@ -704,7 +740,6 @@ function worker() {
     }
 
     if (!isWorker) {
-      // initialize
       scriptsLoad = []
       queue = []
       waitReady()

@@ -151,16 +151,83 @@ describe('thread', function () {
     })
   })
 
-  describe('long computation delay error', function () {
+  describe('bind aditional context to the task', function () {
+    var task = null
+    var job = thread({
+      env: { x: 2 }
+    })
+
+    it('should run a task', function () {
+      task = job.run(function () {
+        return env.x * this.y
+      }, { y: 2 })
+    })
+
+    it('should have a valid result', function (done) {
+      task.then(function (value) {
+        expect(value).to.be.equal(4)
+        done()
+      })
+    })
+
+    it('should not exists the y context variable', function (done) {
+      job.run(function () {
+        return typeof this.y
+      }).then(function (value) {
+        expect(value).to.be.equal('undefined')
+        done()
+      })
+    })
+  })
+
+  describe('passing arguments to the task', function () {
+    var task = null
+    var job = thread({
+      env: { x: 2 }
+    })
+
+    it('should run a task', function () {
+      task = job.run(function (num) {
+        return env.x * this.y * num
+      }, { y: 2 }, [2])
+    })
+
+    it('should have a valid result', function (done) {
+      task.then(function (value) {
+        expect(value).to.be.equal(8)
+        done()
+      })
+    })
+  })
+
+  describe('passing arguments to the asynchronous task', function () {
+    var task = null
+    var job = thread({
+      env: { x: 2 }
+    })
+
+    it('should run a task', function () {
+      task = job.run(function (num, done) {
+        done(null, env.x * this.y * num)
+      }, { y: 2 }, [2])
+    })
+
+    it('should have a valid result', function (done) {
+      task.then(function (value) {
+        expect(value).to.be.equal(8)
+        done()
+      })
+    })
+  })
+
+  describe('task compute time exceeded error', function () {
     var task = null
     var job = thread()
     job.maxTaskDelay = 500
 
     it('should run a task', function () {
       task = job.run(function (done) {
-        setTimeout(function () {
-          done()
-        }, 1000)
+        setTimeout(done, 1000)
       })
     })
 
@@ -169,6 +236,40 @@ describe('thread', function () {
         expect(err.message).to.be.equal('maximum task execution exceeded')
         done()
       })
+    })
+  })
+
+  describe('number of running tasks', function () {
+    var task = null
+    var job = thread()
+
+    it('should run multiple tasks', function () {
+      job.run(function (done) {
+        setTimeout(done, 200)
+      })
+      job.run(function (done) {
+        setTimeout(done, 250)
+      })
+    })
+
+    it('should have a valid number of tasks', function () {
+      expect(job.pending()).to.be.equal(2)
+    })
+
+    it('should be running', function () {
+      expect(job.isRunning()).to.be.true
+    })
+
+    it('should not be running when tasks finished', function (done) {
+      setTimeout(function () {
+        expect(job.pending()).to.be.equal(1)
+        expect(job.isRunning()).to.be.true
+        done()
+      }, 300)
+    })
+
+    it('should kill the thread', function () {
+      job.kill()
     })
   })
 

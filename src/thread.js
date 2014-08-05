@@ -3,9 +3,8 @@ var workerSrc = require('./worker')
 var Task = require('./task')
 var FakeWorker = require('./fake-worker')
 
-var global = window
-var URL = global.URL || global.webkitURL
-var hasWorkers = _.isFn(global.Worker)
+var URL = window.URL || window.webkitURL
+var hasWorkers = _.isFn(window.Worker)
 
 module.exports = Thread
 
@@ -34,7 +33,7 @@ Thread.prototype._create = function () {
     try {
       blob = new Blob([src], { type: 'text/javascript' })
     } catch (e) {
-      var BlobBuilder = global.BlobBuilder || global.WebKitBlobBuilder || global.MozBlobBuilder;
+      var BlobBuilder = window.BlobBuilder || window.WebKitBlobBuilder || window.MozBlobBuilder
       blob = new BlobBuilder()
       blob.append(src)
       blob = blob.getBlob()
@@ -74,14 +73,20 @@ Thread.prototype.require = function (name, fn) {
   }
 }
 
-Thread.prototype.run = Thread.prototype.exec = function (fn, env) {
+Thread.prototype.run = Thread.prototype.exec = function (fn, env, args) {
   var task, index, self = this
-  if (_.isObj(fn)) {
-    env = fn
+  var tasks = self._tasks
+
+  if (_.isArr(fn)) {
+    args = fn
     fn = arguments[1]
   }
+  if (_.isArr(env)) {
+    args = env
+    env = arguments[2]
+  }
   if (!_.isFn(fn)) {
-    throw new TypeError('you must pass a function argument')
+    throw new TypeError('missing function argument')
   }
 
   if (fn instanceof Task) {
@@ -90,11 +95,11 @@ Thread.prototype.run = Thread.prototype.exec = function (fn, env) {
     task = new Task(this)
   }
 
-  index = this._tasks.push(task)
+  tasks.push(task)
   task.finally(function () {
-    self._tasks.splice(index, 1)
+    tasks.splice(tasks.indexOf(task), 1)
   })
-  _.defer(function () { task.run(fn, env) })
+  _.defer(function () { task.run(fn, env, args) })
   return task
 }
 
@@ -110,6 +115,9 @@ Thread.prototype.flush = function () {
 }
 
 Thread.prototype.flushTasks = function () {
+  _.each(this.tasks, function (task) {
+    task.flush()
+  })
   this._tasks.splice(0)
   return this
 }

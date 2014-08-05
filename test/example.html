@@ -6,6 +6,7 @@
     <script src="../thread.js"></script>
     <script>
       // simple example passing custom context
+
       var job = thread({
         env: { error: true }
       })
@@ -15,7 +16,7 @@
           if (env.error) {
             done('invalid')
           }
-        }, 1)
+        }, 50)
       })
 
       setTimeout(function () {
@@ -37,11 +38,20 @@
             done('invalid', sum)
           }
         }, 100)
-      }).then(function (sum) {
+      }).catch(function (sum) {
         task2.then(function (data) {
           console.log(data)
         })
       })
+
+      task2.finally(function (data) {
+        console.log('Finally:', data)
+      })
+
+      setTimeout(function () {
+        console.log(job.pending())
+      }, 1500)
+
     </script>
   </body>
 </html>

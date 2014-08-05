@@ -3,7 +3,7 @@ module.exports = worker
 function worker() {
   var self = this
 
-  function evalExpr(expr) {
+  function $$evalExpr(expr) {
     var fn = null
     eval('fn = ' + expr)
     return fn
@@ -13,6 +13,7 @@ function worker() {
     var namespace = 'env'
     var isWorker = self.document === undefined
     var toStr = Object.prototype.toString
+    var slice = Array.prototype.slice
     var eventMethod = self.addEventListener ? 'addEventListener' : 'attachEvent'
     var messageEvent = eventMethod === 'attachEvent' ? 'onmessage' : 'message'
     var importFn = isWorker ? importScripts : appendScripts
@@ -26,6 +27,19 @@ function worker() {
 
     function isArr(o) {
       return o && Array.isArray ? Array.isArray(o) : toStr.call(o) === '[object Array]'
+    }
+
+    function extend(origin, target) {
+      var i, l, key, args = slice.call(arguments).slice(1)
+      for (i = 0, l = args.length; i < l; i += 1) {
+        target = args[i]
+        if (isObj(target)) {
+          for (key in target) if (target.hasOwnProperty(key)) {
+            origin[key] = target[key]
+          }
+        }
+      }
+      return origin
     }
 
     function each(obj, fn) {
@@ -47,12 +61,11 @@ function worker() {
 
     function waitReady() {
       var dom = self.document
-
       if (dom.readyState === 'complete') {
         ready = true
       } else {
-        self.document.onreadystatechange = function() {
-          if (document.readyState === 'complete') {
+        dom.onreadystatechange = function() {
+          if (dom.readyState === 'complete') {
             ready = true
           }
         }
@@ -77,14 +90,14 @@ function worker() {
     }
 
     function appendScripts() {
-      var args = Array.prototype.slice.call(arguments)
-      for (var i = 0; i < args.length; i += 1) {
+      var i, l, args = Array.prototype.slice.call(arguments)
+      for (i = 0, l = args.length; i < l; i += 1) {
         if (args[i]) appendScript(args[i])
       }
     }
 
     function scriptsLoadTimer() {
-      intervalId = setInterval(function() {
+      intervalId = setInterval(function () {
         if (ready && !scriptsLoad.length) {
           clearInterval(intervalId)
           each(queue, function (fn) { fn() })
@@ -157,11 +170,15 @@ function worker() {
     }
 
     function process(msg) {
-      var fn = evalExpr(msg.src)
-      if (fn.length > 0) {
-        fn.call(self, done(msg))
+      var args = msg.args || []
+      var fn = $$evalExpr(msg.src)
+      var ctx = isObj(msg.env) ? msg.env : self[namespace]
+
+      if (fn.length === (args.length + 1)) {
+        args.push(done(msg))
+        fn.apply(ctx, args)
       } else {
-        fn = fn.call(self)
+        fn = fn.apply(ctx, args)
         sendSuccess(msg, fn)
       }
     }
@@ -195,9 +212,7 @@ function worker() {
     }
 
     function extendEnv(data) {
-      if (isObj(data.env)) {
-        extend(self[namespace], data.env)
-      }
+      extend(self[namespace || namespace], data.env)
     }
 
     function onMessage(ev) {
@@ -217,7 +232,6 @@ function worker() {
     }
 
     if (!isWorker) {
-      // initialize
       scriptsLoad = []
       queue = []
       waitReady()

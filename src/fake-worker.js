@@ -4,6 +4,7 @@ var workerSrc = require('./worker')
 var eventMethod = window.addEventListener ? 'addEventListener' : 'attachEvent'
 var messageEvent = eventMethod === 'attachEvent' ? 'onmessage' : 'message'
 var addEventListener = window[eventMethod]
+var removeEventListener = window[window.removeEventListener ? 'removeEventListener' : 'detachEvent']
 
 module.exports = FakeWorker
 
@@ -15,7 +16,7 @@ function FakeWorker(id) {
   this._initialize()
 }
 
-FakeWorker.prototype._create = function() {
+FakeWorker.prototype._create = function () {
   var iframe = this.iframe = document.createElement('iframe')
   if (!iframe.style) iframe.style = {}
   iframe.style.display = 'none'
@@ -23,24 +24,35 @@ FakeWorker.prototype._create = function() {
   document.body.appendChild(iframe)
 }
 
-FakeWorker.prototype._subscribeListeners = function(type) {
+FakeWorker.prototype._subscribeListeners = function (type) {
   var listeners = this.listeners
   if (eventMethod === 'attachEvent') type = 'on' + type;
-  addEventListener(type, function(e) {
+
+  function eventHandler(e) {
     if (e.data && e.data.owner === 'thread.js') {
       if (listeners[type]) {
-        _.each(listeners[type], function(fn) { fn(e) })
+        _.each(listeners[type], function (fn) {
+          if (_.isFn(fn)) fn(e)
+        })
       }
     }
-  })
+  }
+
+  this._eventHandler = eventHandler
+  addEventListener(type, eventHandler)
 }
 
-FakeWorker.prototype._setupListeners = function() {
+FakeWorker.prototype._setupListeners = function () {
   this._subscribeListeners('message')
   this._subscribeListeners('error')
 }
 
-FakeWorker.prototype._getWindow = function() {
+FakeWorker.prototype._unsubscribeListeners = function () {
+  removeEventListener('error', this._eventHandler)
+  removeEventListener('message', this._eventHandler)
+}
+
+FakeWorker.prototype._getWindow = function () {
   var win = this.iframe.contentWindow
   var wEval = win.eval, wExecScript = win.execScript
   if (!wEval && wExecScript) {
@@ -51,24 +63,23 @@ FakeWorker.prototype._getWindow = function() {
   return win
 }
 
-FakeWorker.prototype._initialize = function(msg) {
+FakeWorker.prototype._initialize = function (msg) {
   var win = this._getWindow()
   win.eval.call(win, _.getSource(workerSrc))
-  //win.postMessage('', getLocation())
 }
 
-FakeWorker.prototype.addEventListener = function(type, fn) {
+FakeWorker.prototype.addEventListener = function (type, fn) {
   var pool = this.listeners[type] = this.listeners[type] || []
-  pool.push(fn)
+  if (_.isFn(fn)) pool.push(fn)
 }
 
-FakeWorker.prototype.removeEventListener = function(type, fn) {
-  var pool = this.listeners[type]
+FakeWorker.prototype.removeEventListener = function (type, fn) {
+  var index, pool = this.listeners[type]
   if (pool) {
     if (_.isFn(fn)) {
       pool.splice(0, pool.length)
     } else {
-      var index = pool.indexOf(fn)
+      index = pool.indexOf(fn)
       if (~index) {
         pool.splice(index, 1)
       }
@@ -76,14 +87,15 @@ FakeWorker.prototype.removeEventListener = function(type, fn) {
   }
 }
 
-FakeWorker.prototype.postMessage = function(msg) {
+FakeWorker.prototype.postMessage = function (msg) {
   var win = this._getWindow()
   msg.origin = getLocation()
   win.postMessage(msg, msg.origin)
 }
 
-FakeWorker.prototype.terminate = function() {
+FakeWorker.prototype.terminate = function () {
   this.listeners = null
+  this._unsubscribeListeners()
   document.body.removeChild(this.iframe)
 }
 
