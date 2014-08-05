@@ -8,12 +8,13 @@
 </tr>
 </table>
 
-**thread.js** is a small library that **simplifies JavaScript parallel computing in browsers** environments.
+**thread.js** is lightweight library that **simplifies JavaScript parallel computing in browser**
+environments which provides a simple and beautiful [programmatic API](#api)
 
-It uses the [Web Workers API](http://en.wikipedia.org/wiki/Web_worker),
-but provides fallback support for older browsers based on `iframe` hacking.
+It uses the [Web Workers API](http://en.wikipedia.org/wiki/Web_worker) for a real parallelism,
+but provides fallback support for older browsers based on an `iframe` hack
 
-Welcome to the multi-thread world in JavaScript
+Welcome to the multi-thread world in JavaScript. Start reading some [examples](#basic-usage)
 
 ## Installation
 
@@ -33,7 +34,7 @@ Or loading the script remotely (just for testing or development)
 
 ### Environments
 
-Cross-browser support guaranteed thanks to passing tests in [Testling](https://ci.testling.com/)
+Cross-browser support guaranteed passing tests in [Testling](https://ci.testling.com/)
 
 - Chrome >= 5
 - Firefox >= 3
@@ -142,6 +143,16 @@ Return: `Thread`
 
 Start (or restart) the current thread.
 If the thread was previously killed, you can reuse it calling this method
+
+#### Thread.pending()
+Return: `number`
+
+Return the pending running tasks on the current thread
+
+#### Thread.isRunning()
+Return: `boolean`
+
+Return `true` if the current thread has running tasks
 
 ### thread.Task(thread)
 Return: `Task`

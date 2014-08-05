@@ -1,7 +1,7 @@
 module.exports = worker
 
 function worker() {
-  var self = self || this
+  var self = this
 
   function evalExpr(expr) {
     var fn = null

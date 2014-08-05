@@ -75,7 +75,11 @@ Thread.prototype.require = function (name, fn) {
 }
 
 Thread.prototype.run = Thread.prototype.exec = function (fn, env) {
-  var task
+  var task, index, self = this
+  if (_.isObj(fn)) {
+    env = fn
+    fn = arguments[1]
+  }
   if (!_.isFn(fn)) {
     throw new TypeError('you must pass a function argument')
   }
@@ -85,9 +89,10 @@ Thread.prototype.run = Thread.prototype.exec = function (fn, env) {
   } else {
     task = new Task(this)
   }
-  this._tasks.push(task)
-  task.finally(function () {
 
+  index = this._tasks.push(task)
+  task.finally(function () {
+    self._tasks.splice(index, 1)
   })
   _.defer(function () { task.run(fn, env) })
   return task
