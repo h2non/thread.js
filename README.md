@@ -9,7 +9,7 @@
 </table>
 
 **thread.js** is lightweight library that **simplifies JavaScript parallel computing in browser**
-environments which provides a simple and beautiful [programmatic API](#api)
+environments through a featured and beautiful [programmatic API](#api)
 
 It uses the [Web Workers API](http://en.wikipedia.org/wiki/Web_worker) for a real parallelism,
 but provides fallback support for older browsers based on an `iframe` hack
