@@ -164,7 +164,7 @@ Normally you don't need to call it directly, it will done via `Thread.run()` fac
 #### Task.maxTaskDelay
 Value: `number` Default: `5000`
 
-Maximum delay task time in miliseconds.
+The maximum amount of time that a task can take in miliseconds.
 If the task computation exceed this, it will be exit as error
 
 #### Task.then(successFn [, errorFn])
