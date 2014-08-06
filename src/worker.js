@@ -19,6 +19,7 @@ function worker() {
     var importFn = isWorker ? importScripts : appendScripts
     var ready = false
     var queue, origin, scriptsLoad, intervalId = null
+    var fnRegex = /^\$\$fn\$\$/
     self.addEventListener = self[eventMethod]
 
     function isObj(o) {
@@ -35,7 +36,11 @@ function worker() {
         target = args[i]
         if (isObj(target)) {
           for (key in target) if (target.hasOwnProperty(key)) {
-            origin[key] = target[key]
+            if (fnRegex.test(key)) {
+              origin[key.replace('$$fn$$', '')] = $$evalExpr(target[key])
+            } else {
+              origin[key] = target[key]
+            }
           }
         }
       }
@@ -129,6 +134,10 @@ function worker() {
     }
 
     function requireFn(name, fn) {
+      if (fnRegex.test(name)) {
+        name = name.replace('$$fn$$', '')
+        fn = $$evalExpr(fn)
+      }
       eval('self[namespace][name] = ' + fn)
     }
 

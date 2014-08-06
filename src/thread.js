@@ -53,6 +53,16 @@ Thread.prototype._create = function () {
   return this
 }
 
+Thread.prototype._serializeMap = function (obj) {
+  _.each(obj, function (fn, key) {
+    if (_.isFn(fn))
+      obj['$$fn$$' + key] = fn.toString()
+    else
+      obj[key] = fn
+  })
+  return obj
+}
+
 Thread.prototype.require = function (name, fn) {
   if (_.isFn(name)) {
     fn = name
@@ -66,10 +76,7 @@ Thread.prototype.require = function (name, fn) {
       this.send({ type: 'require:file', src: name })
     }
   } else if (_.isObj(name)) {
-    _.each(name, function (fn, key) {
-      if (_.isFn(fn)) { name[key] = fn.toString() }
-    })
-    this.send({ type: 'require:map', src: name })
+    this.send({ type: 'require:map', src: this._serializeMap(name) })
   }
 }
 
@@ -104,7 +111,7 @@ Thread.prototype.run = Thread.prototype.exec = function (fn, env, args) {
 }
 
 Thread.prototype.bind = Thread.prototype.push = function (env) {
-  this.send({ type: 'env', data: env })
+  this.send({ type: 'env', data: this._serializeMap(env) })
   return this
 }
 

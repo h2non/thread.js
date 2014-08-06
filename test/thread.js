@@ -151,6 +151,38 @@ describe('thread', function () {
     })
   })
 
+  describe('pass functions as environment context', function () {
+    var task = null
+
+    function defer(fn) {
+      setTimeout(fn, 1)
+    }
+
+    var job = thread({
+      env: {
+        x: 2
+      },
+      require: {
+        defer: defer
+      }
+    })
+
+    it('should run a task', function () {
+      task = job.run(function (done) {
+        return env.defer(function () {
+          done(env.x * this.y)
+        })
+      }, { y: 2 })
+    })
+
+    xit('should have a valid result', function (done) {
+      task.then(function (value) {
+        expect(value).to.be.equal(4)
+        done()
+      })
+    })
+  })
+
   describe('bind aditional context to the task', function () {
     var task = null
     var job = thread({
