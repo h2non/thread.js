@@ -12,7 +12,7 @@
 environments through a featured and beautiful [programmatic API](#api)
 
 It uses the [Web Workers API](http://en.wikipedia.org/wiki/Web_worker) for a real parallelism,
-but provides fallback support for older browsers based on an `iframe` hack
+but provides fallback support for older browsers using an `iframe` hack
 
 Welcome to the multi-thread world in JavaScript. Start reading some [examples](#basic-usage)
 
