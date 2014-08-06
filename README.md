@@ -107,10 +107,18 @@ Supported options:
 - **require** `array` Path list of scripts to load
 - **namespace** `string` Global namespace to allocate the scope environment. Default to `env`
 
-#### Thread.run(fn, env)
+#### Thread.run(fn, env, args)
 Return: `Task` Alias: `exec`
 
-Run a function in the thread context, optionally passing a custom environment
+Run a function in the thread context, optionally binding a custom context or passing function arguments
+
+```
+thread().run(function (num, done) {
+  done(null, this.x * num)
+}, { x: 2 }, [2]).then(function (result) {
+  console.log(result) // -> 4
+})
+```
 
 #### Thread.require(sources)
 Return: `Thread`
