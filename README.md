@@ -11,15 +11,15 @@
 **thread.js** is lightweight library that **simplifies JavaScript parallel computing in browser**
 environments through a featured, elegant and beautiful [programmatic API](#api)
 
-It allows you to run tasks in non-blocking threads, allowing you to bind custom values to
-the thread scope, supporting from primites types, remote script (such as lodash) until custom functions.
+It allows you to run tasks in non-blocking thread. It provides support for binding custom values to
+the thread scope, supporting from primites types, remote script until custom functions.
 It also provides built-in support for creating pool of threads and distributing the
-computed task load across different threads
+task load across different threads transparently
 
-It uses the [Web Workers API](http://en.wikipedia.org/wiki/Web_worker) for a real parallelism,
-but provides fallback support for older browsers based on an `iframe` hack
+It uses [Web Workers](http://en.wikipedia.org/wiki/Web_worker) to create real threads,
+but provides fallback support for older browsers based on an `iframe` hack.
 
-Welcome to the multi-thread world in JavaScript. Start reading some [examples](#basic-usage)
+Welcome to the multi-thread world in JavaScript. You could start reading some [examples](#basic-usage)
 
 **Note**: the library is still in beta stage. A deep cross-browser testing is still pending.
 Do not use it production environments
@@ -53,7 +53,8 @@ Cross-browser support guaranteed passing tests in [Testling](https://ci.testling
 ### Basic usage
 
 If `require` is available, you must use it to fetch the module.
-Otherwise it will be available in as global
+Otherwise it will be available as global
+
 ```js
 var thread = require('thread')
 ```
@@ -164,7 +165,8 @@ for (var i = 0; i < 50; i += 1) {
 #### Thread.require(sources)
 Return: `Thread`
 
-Add remote scripts, bind an object or functions to the thread isolated scope as global namespace environment
+Add remote scripts, bind an object or functions to the thread isolated scope.
+It will be exposed in the global namespace (default `env`)
 
 Load remote script
 ```js
@@ -203,7 +205,7 @@ thread().require({
 })
 ```
 
-#### Thread.bind(env)
+#### Thread.bind(obj)
 Return: `Thread`
 
 Bind a map of values to the isolated thread scope.
@@ -305,22 +307,22 @@ always following the same design/code patterns that already exist
 Only [node.js](http://nodejs.org) is required for development
 
 Clone the repository
-```
+```bash
 $ git clone https://github.com/h2non/thread.js.git && cd thread.js
 ```
 
 Install dependencies
-```
+```bash
 $ npm install
 ```
 
 Generate browser bundle source
-```
+```bash
 $ make browser
 ```
 
 Run tests
-```
+```bash
 $ make test
 ```
 
