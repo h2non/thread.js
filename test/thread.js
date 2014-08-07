@@ -151,12 +151,10 @@ describe('thread', function () {
     })
   })
 
-  describe('pass functions as environment context', function () {
+  describe('pass function as require context', function () {
     var task = null
 
-    function defer(fn) {
-      setTimeout(fn, 1)
-    }
+    function defer(fn, ms) { setTimeout(fn, 1) }
 
     var job = thread({
       env: {
@@ -169,13 +167,40 @@ describe('thread', function () {
 
     it('should run a task', function () {
       task = job.run(function (done) {
+        var y = this.y
         return env.defer(function () {
-          done(env.x * this.y)
+          done(null, env.x * y)
         })
       }, { y: 2 })
     })
 
-    xit('should have a valid result', function (done) {
+    it('should have a valid result', function (done) {
+      task.then(function (value) {
+        expect(value).to.be.equal(4)
+        done()
+      })
+    })
+  })
+
+  describe('pass function to worker via require', function () {
+    var task = null
+
+    function defer(fn, ms) { setTimeout(fn, 1) }
+
+    var job = thread({
+      env: { x: 2 }
+    }).require('defer', defer)
+
+    it('should run a task', function () {
+      task = job.run(function (done) {
+        var y = this.y
+        return env.defer(function () {
+          done(null, env.x * y)
+        })
+      }, { y: 2 })
+    })
+
+    it('should have a valid result', function (done) {
       task.then(function (value) {
         expect(value).to.be.equal(4)
         done()
@@ -207,6 +232,28 @@ describe('thread', function () {
         return typeof this.y
       }).then(function (value) {
         expect(value).to.be.equal('undefined')
+        done()
+      })
+    })
+  })
+
+  describe('pool of threads', function () {
+    var task, results = []
+    var job = thread({ env: { x: 2 } }).pool(4)
+
+    it('should run multiple tasks', function () {
+      while (job.threadPool.length !== 4) {
+        task = job.run(function () {
+          return env.x * this.y
+        }, { y: 2 }).then(function (value) {
+          results.push(value)
+        })
+      }
+    })
+
+    it('should have a valid result', function (done) {
+      task.then(function () {
+        expect(results).to.be.deep.equal([4,4,4,4])
         done()
       })
     })

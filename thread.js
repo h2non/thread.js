@@ -106,7 +106,7 @@ function getLocation() {
     location.protocol + "//" + location.hostname + (location.port ? ':' + location.port : '')
 }
 
-},{"./utils":5,"./worker":6}],2:[function(require,module,exports){
+},{"./utils":6,"./worker":7}],2:[function(require,module,exports){
 var Thread = require('./thread')
 
 module.exports = ThreadFactory
@@ -120,7 +120,79 @@ ThreadFactory.create = ThreadFactory
 ThreadFactory.Task = Thread.Task
 ThreadFactory.Thread = Thread
 
-},{"./thread":4}],3:[function(require,module,exports){
+},{"./thread":5}],3:[function(require,module,exports){
+var _ = require('./utils')
+
+module.exports = pool
+
+function pool(num, thread) {
+  var threadRun = thread.run
+  var threads = [ thread ]
+  var options = thread.options
+  var terminate = thread.terminate
+
+  function findBestAvailableThread(pending) {
+    var i, l, thread
+    for (i = 0, l = threads.length; i < l; i += 1) {
+      thread = threads[i]
+      if (thread.pending() <= pending) {
+        return thread
+      }
+    }
+  }
+
+  function newThread() {
+    var thread = new pool.Thread(options)
+    threads.push(thread)
+    return thread
+  }
+
+  thread.run = function () {
+    var args = arguments
+    var count = 0
+
+    function runTask(thread) {
+      var task
+      if (thread === threads[0]) {
+        task = threadRun.apply(thread, args)
+      } else {
+        task = thread.run.apply(thread, args)
+      }
+      return task
+    }
+
+    function nextThread(count) {
+      var task, thread = findBestAvailableThread(count)
+
+      if (thread) {
+        task = runTask(thread)
+      } else {
+        if (threads.length < num) {
+          task = runTask(newThread())
+        } else {
+          task = nextThread(count + 1)
+        }
+      }
+      return task
+    }
+
+    return nextThread(count)
+  }
+
+  thread.terminate = thread.kill = function () {
+    _.each(threads, function (thread, i) {
+      if (i === 0) terminate()
+      else thread.terminate()
+    })
+    threads.splice(0)
+  }
+
+  thread.threadPool = threads
+
+  return thread
+}
+
+},{"./utils":6}],4:[function(require,module,exports){
 var _ = require('./utils')
 
 module.exports = Task
@@ -189,7 +261,7 @@ Task.prototype.setEnv = function (env) {
 }
 
 Task.prototype.run = function (fn, env, args) {
-  var self = this
+  var maxDelay
   this.time = new Date().getTime()
 
   if (!_.isFn(fn)) {
@@ -199,21 +271,9 @@ Task.prototype.run = function (fn, env, args) {
   env = _.extend({}, this.env, env)
   this.memoized = null
 
-  var maxDelay = this.thread.maxTaskDelay
+  maxDelay = this.thread.maxTaskDelay
   if (maxDelay > 250) {
-    var now = new Date().getTime()
-    var timer = setInterval(function () {
-      if (self.memoized) {
-        return clearInterval(timer)
-      }
-      if ((new Date().getTime() - now) > maxDelay) {
-        var error = new Error('maximum task execution exceeded')
-        self.memoized = { type: 'run:error', error: error }
-        self._trigger(error, 'error')
-        self._trigger(error, 'end')
-        clearInterval(timer)
-      }
-    }, 250)
+    initInterval(maxDelay, this)
   }
 
   this.worker.postMessage({
@@ -273,11 +333,28 @@ Task.create = function (options) {
   return new Task(options)
 }
 
-},{"./utils":5}],4:[function(require,module,exports){
+function initInterval(maxDelay, self) {
+  var now = new Date().getTime()
+  var timer = setInterval(function () {
+    if (self.memoized) {
+      return clearInterval(timer)
+    }
+    if ((new Date().getTime() - now) > maxDelay) {
+      var error = new Error('maximum task execution exceeded')
+      self.memoized = { type: 'run:error', error: error }
+      self._trigger(error, 'error')
+      self._trigger(error, 'end')
+      clearInterval(timer)
+    }
+  }, 250)
+}
+
+},{"./utils":6}],5:[function(require,module,exports){
 var _ = require('./utils')
 var workerSrc = require('./worker')
 var Task = require('./task')
 var FakeWorker = require('./fake-worker')
+var pool = require('./pool')
 
 var URL = window.URL || window.webkitURL
 var hasWorkers = _.isFn(window.Worker)
@@ -309,8 +386,7 @@ Thread.prototype._create = function () {
     try {
       blob = new Blob([src], { type: 'text/javascript' })
     } catch (e) {
-      var BlobBuilder = window.BlobBuilder || window.WebKitBlobBuilder || window.MozBlobBuilder
-      blob = new BlobBuilder()
+      blob = new (window.BlobBuilder || window.WebKitBlobBuilder || window.MozBlobBuilder)()
       blob.append(src)
       blob = blob.getBlob()
     }
@@ -323,18 +399,21 @@ Thread.prototype._create = function () {
     this._worker = new FakeWorker(this.id)
   }
 
-  this.send(_.extend({ type: 'start' }, this.options))
+  this.send(_.extend({ type: 'start' }, { env: this.options.env, namespace: this.options.namespace }))
   this._worker.addEventListener('error', function (e) { throw e })
+  this.require(this.options.require)
 
   return this
 }
 
 Thread.prototype._serializeMap = function (obj) {
   _.each(obj, function (fn, key) {
-    if (_.isFn(fn))
+    if (_.isFn(fn)) {
       obj['$$fn$$' + key] = fn.toString()
-    else
+      obj[key] = undefined
+    } else {
       obj[key] = fn
+    }
   })
   return obj
 }
@@ -351,9 +430,12 @@ Thread.prototype.require = function (name, fn) {
     } else {
       this.send({ type: 'require:file', src: name })
     }
+  } else if (_.isArr(name)) {
+    this.send({ type: 'require:file', src: name })
   } else if (_.isObj(name)) {
     this.send({ type: 'require:map', src: this._serializeMap(name) })
   }
+  return this
 }
 
 Thread.prototype.run = Thread.prototype.exec = function (fn, env, args) {
@@ -386,7 +468,7 @@ Thread.prototype.run = Thread.prototype.exec = function (fn, env, args) {
   return task
 }
 
-Thread.prototype.bind = Thread.prototype.push = function (env) {
+Thread.prototype.bind = function (env) {
   this.send({ type: 'env', data: this._serializeMap(env) })
   return this
 }
@@ -411,9 +493,17 @@ Thread.prototype.send = function (msg) {
   }
 }
 
+Thread.prototype.pool = function (num) {
+  num = num || 2
+  return pool(num, this)
+}
+
+pool.Thread = Thread
+
 Thread.prototype.terminate = Thread.prototype.kill = function () {
   if (!this._terminated) {
     this.options = {}
+    this.flushTasks().flush()
     this._terminated = true
     this._worker.terminate()
   }
@@ -423,8 +513,8 @@ Thread.prototype.terminate = Thread.prototype.kill = function () {
 Thread.prototype.start = Thread.prototype.init = function (options) {
   if (this._terminated) {
     this._setOptions(options)
-    this._terminated = false
     this._create()
+    this._terminated = false
   }
   return this
 }
@@ -439,7 +529,7 @@ Thread.prototype.isRunning = function () {
 
 Thread.Task = Task
 
-},{"./fake-worker":1,"./task":3,"./utils":5,"./worker":6}],5:[function(require,module,exports){
+},{"./fake-worker":1,"./pool":3,"./task":4,"./utils":6,"./worker":7}],6:[function(require,module,exports){
 var _ = exports
 var toStr = Object.prototype.toString
 
@@ -512,7 +602,7 @@ exports.generateUUID = function generateUUID() {
   return uuid
 }
 
-},{}],6:[function(require,module,exports){
+},{}],7:[function(require,module,exports){
 module.exports = worker
 
 function worker() {
@@ -610,7 +700,7 @@ function worker() {
     }
 
     function appendScripts() {
-      var i, l, args = Array.prototype.slice.call(arguments)
+      var i, l, args = slice.call(arguments)
       for (i = 0, l = args.length; i < l; i += 1) {
         if (args[i]) appendScript(args[i])
       }
@@ -735,6 +825,10 @@ function worker() {
       self[namespace] = e.env || {}
     }
 
+    function flush() {
+      self[namespace] = {}
+    }
+
     function extendEnv(data) {
       extend(self[namespace || namespace], data.env)
     }
@@ -752,6 +846,7 @@ function worker() {
         case 'require:fn': requireFn(data.name, data.src); break
         case 'require:file':
         case 'require:map': require(data.src); break
+        case 'flush': flush(); break
       }
     }
 
@@ -762,9 +857,8 @@ function worker() {
     }
 
     self.addEventListener(messageEvent, onMessage)
-    self.addEventListener('error', function (err) {
-      throw err
-    })
+    self.addEventListener('error', function (err) { throw err })
+
   })()
 }
 

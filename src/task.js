@@ -66,7 +66,7 @@ Task.prototype.setEnv = function (env) {
 }
 
 Task.prototype.run = function (fn, env, args) {
-  var self = this
+  var maxDelay
   this.time = new Date().getTime()
 
   if (!_.isFn(fn)) {
@@ -76,21 +76,9 @@ Task.prototype.run = function (fn, env, args) {
   env = _.extend({}, this.env, env)
   this.memoized = null
 
-  var maxDelay = this.thread.maxTaskDelay
+  maxDelay = this.thread.maxTaskDelay
   if (maxDelay > 250) {
-    var now = new Date().getTime()
-    var timer = setInterval(function () {
-      if (self.memoized) {
-        return clearInterval(timer)
-      }
-      if ((new Date().getTime() - now) > maxDelay) {
-        var error = new Error('maximum task execution exceeded')
-        self.memoized = { type: 'run:error', error: error }
-        self._trigger(error, 'error')
-        self._trigger(error, 'end')
-        clearInterval(timer)
-      }
-    }, 250)
+    initInterval(maxDelay, this)
   }
 
   this.worker.postMessage({
@@ -148,4 +136,20 @@ Task.prototype.flush = function () {
 
 Task.create = function (options) {
   return new Task(options)
+}
+
+function initInterval(maxDelay, self) {
+  var now = new Date().getTime()
+  var timer = setInterval(function () {
+    if (self.memoized) {
+      return clearInterval(timer)
+    }
+    if ((new Date().getTime() - now) > maxDelay) {
+      var error = new Error('maximum task execution exceeded')
+      self.memoized = { type: 'run:error', error: error }
+      self._trigger(error, 'error')
+      self._trigger(error, 'end')
+      clearInterval(timer)
+    }
+  }, 250)
 }

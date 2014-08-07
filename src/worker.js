@@ -95,7 +95,7 @@ function worker() {
     }
 
     function appendScripts() {
-      var i, l, args = Array.prototype.slice.call(arguments)
+      var i, l, args = slice.call(arguments)
       for (i = 0, l = args.length; i < l; i += 1) {
         if (args[i]) appendScript(args[i])
       }
@@ -220,6 +220,10 @@ function worker() {
       self[namespace] = e.env || {}
     }
 
+    function flush() {
+      self[namespace] = {}
+    }
+
     function extendEnv(data) {
       extend(self[namespace || namespace], data.env)
     }
@@ -237,6 +241,7 @@ function worker() {
         case 'require:fn': requireFn(data.name, data.src); break
         case 'require:file':
         case 'require:map': require(data.src); break
+        case 'flush': flush(); break
       }
     }
 
@@ -247,8 +252,7 @@ function worker() {
     }
 
     self.addEventListener(messageEvent, onMessage)
-    self.addEventListener('error', function (err) {
-      throw err
-    })
+    self.addEventListener('error', function (err) { throw err })
+
   })()
 }

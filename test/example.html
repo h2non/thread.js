@@ -27,30 +27,33 @@
 
       // load remote script dependency
       var job2 = thread({
-        require: ['http://cdn.rawgit.com/h2non/hu/0.1.1/hu.js'],
+        require: {
+          defer: function (fn, ms) { setTimeout(fn, ms) }
+        },
         env: { x: 2 }
       })
 
       var task2 = job2.run(function (done) {
         var sum = env.x * 2
-        hu.defer(function () {
+        env.defer(function () {
           if (env.x) {
-            done('invalid', sum)
+            done(null, sum)
           }
-        }, 100)
-      }).catch(function (sum) {
-        task2.then(function (data) {
-          console.log(data)
-        })
+        }, 500)
+      }).then(function (value) {
+        console.log('success:', value)
+      }).catch(function (err) {
+        console.log('error:', err)
       })
 
       task2.finally(function (data) {
         console.log('Finally:', data)
       })
 
+      console.log('Pending before:', job2.pending())
       setTimeout(function () {
-        console.log(job.pending())
-      }, 1500)
+        console.log('Pending after:', job2.pending())
+      }, 1000)
 
     </script>
   </body>

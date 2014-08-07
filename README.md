@@ -9,12 +9,20 @@
 </table>
 
 **thread.js** is lightweight library that **simplifies JavaScript parallel computing in browser**
-environments through a featured and beautiful [programmatic API](#api)
+environments through a featured, elegant and beautiful [programmatic API](#api)
+
+It allows you to run tasks in non-blocking threads, allowing you to bind custom values to
+the thread scope, supporting from primites types, remote script (such as lodash) until custom functions.
+It also provides built-in support for creating pool of threads and distributing the
+computed task load across different threads
 
 It uses the [Web Workers API](http://en.wikipedia.org/wiki/Web_worker) for a real parallelism,
 but provides fallback support for older browsers based on an `iframe` hack
 
 Welcome to the multi-thread world in JavaScript. Start reading some [examples](#basic-usage)
+
+**Note**: the library is still in beta stage. A deep cross-browser testing is still pending.
+Do not use it production environments
 
 ## Installation
 
@@ -29,7 +37,7 @@ $ component install h2non/thread.js
 
 Or loading the script remotely (just for testing or development)
 ```html
-<script src="//cdn.rawgit.com/h2non/thread.js/0.1.0-rc.0/thread.js"></script>
+<script src="//cdn.rawgit.com/h2non/thread.js/0.1.0-rc.1/thread.js"></script>
 ```
 
 ### Environments
@@ -120,20 +128,109 @@ thread().run(function (num, done) {
 })
 ```
 
+#### Thread.pool(num)
+Return: `Thread`
+
+Create a pool of threads and run tasks accross them
+
+It implements a simple best availability orchestration algorithm to distribute tasks across multiple threads.
+It will only create a new thread if it's required and there is not any other thread available
+
+This feature is still beta and general improvements will be done in a future
+
+```js
+// create a pool with a maximum of 10 threads
+var pool = thread({ env: { x: 2 } }).pool(10)
+var count = 1
+
+function runAsyncTask(num) {
+  setTimeout(function () {
+    pool.run(function (done) {
+      return setTimeout(function () {
+        done(null, env.x * 2)
+      }, Math.random() * 1000)
+    }).then(function (result) {
+      console.log('Task:', num, '- Result:', result, '- Used threads:', pool.threadPool.length)
+      if (count++ === 50) console.log('Tasks finished')
+    })
+  }, Math.random() * 5000)
+}
+
+for (var i = 0; i < 50; i += 1) {
+  runAsyncTask(i)
+}
+```
+
 #### Thread.require(sources)
 Return: `Thread`
 
-Add required scripts or functions to bind to the thread isolated context
+Add remote scripts, bind an object or functions to the thread isolated scope as global namespace environment
+
+Load remote script
+```js
+thread().require('http://cdn.rawgit.com/h2non/hu/0.1.1/hu.js')
+```
+
+Or multiple scripts
+```js
+thread().require([
+  'http://cdn.rawgit.com/h2non/hu/0.1.1/hu.js',
+  'http://cdn.rawgit.com/h2non/fw/0.1.2/fw.js'
+])
+```
+
+Binding custom objects and primitives types
+```js
+thread().require({
+  list: [1,2,3,4,5],
+  name: 'John',
+  age: 28,
+  time: new Date().getTime()
+})
+```
+
+Binding functions
+```js
+thread().require({
+  defer: function (fn) {
+    setTimeout(fn, 1)
+  },
+  transform: function (arr) {
+    return arr.reverse().filter(function (num) {
+      return num > 1 && num < 100
+    })
+  }
+})
+```
 
 #### Thread.bind(env)
-Return: `Thread` Alias: `push`
+Return: `Thread`
 
-Bind a new context to the isolated thread
+Bind a map of values to the isolated thread scope.
+You can do the same passing an object to `require()`
+
+```js
+var task = thread().bind({
+  num: 4,
+  list: [3,2,1],
+  defer: function (fn) {
+    setTimeout(fn, 1)
+  }
+})
+
+task.run(function (done) {
+  env.defer(function () {
+    done(null, env.list.reverse().push(env.num))
+  })
+}).then(function (result) {
+  console.log(result) // -> [1,2,3,4]
+})
+```
 
 #### Thread.flush()
 Return: `Thread`
 
-Flush the existent thread environment scope
+Flush the existent isolated thread scope
 
 #### Thread.send(msg)
 Return: `Thread`

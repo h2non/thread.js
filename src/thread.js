@@ -2,6 +2,7 @@ var _ = require('./utils')
 var workerSrc = require('./worker')
 var Task = require('./task')
 var FakeWorker = require('./fake-worker')
+var pool = require('./pool')
 
 var URL = window.URL || window.webkitURL
 var hasWorkers = _.isFn(window.Worker)
@@ -33,8 +34,7 @@ Thread.prototype._create = function () {
     try {
       blob = new Blob([src], { type: 'text/javascript' })
     } catch (e) {
-      var BlobBuilder = window.BlobBuilder || window.WebKitBlobBuilder || window.MozBlobBuilder
-      blob = new BlobBuilder()
+      blob = new (window.BlobBuilder || window.WebKitBlobBuilder || window.MozBlobBuilder)()
       blob.append(src)
       blob = blob.getBlob()
     }
@@ -47,18 +47,21 @@ Thread.prototype._create = function () {
     this._worker = new FakeWorker(this.id)
   }
 
-  this.send(_.extend({ type: 'start' }, this.options))
+  this.send(_.extend({ type: 'start' }, { env: this.options.env, namespace: this.options.namespace }))
   this._worker.addEventListener('error', function (e) { throw e })
+  this.require(this.options.require)
 
   return this
 }
 
 Thread.prototype._serializeMap = function (obj) {
   _.each(obj, function (fn, key) {
-    if (_.isFn(fn))
+    if (_.isFn(fn)) {
       obj['$$fn$$' + key] = fn.toString()
-    else
+      obj[key] = undefined
+    } else {
       obj[key] = fn
+    }
   })
   return obj
 }
@@ -75,9 +78,12 @@ Thread.prototype.require = function (name, fn) {
     } else {
       this.send({ type: 'require:file', src: name })
     }
+  } else if (_.isArr(name)) {
+    this.send({ type: 'require:file', src: name })
   } else if (_.isObj(name)) {
     this.send({ type: 'require:map', src: this._serializeMap(name) })
   }
+  return this
 }
 
 Thread.prototype.run = Thread.prototype.exec = function (fn, env, args) {
@@ -110,7 +116,7 @@ Thread.prototype.run = Thread.prototype.exec = function (fn, env, args) {
   return task
 }
 
-Thread.prototype.bind = Thread.prototype.push = function (env) {
+Thread.prototype.bind = function (env) {
   this.send({ type: 'env', data: this._serializeMap(env) })
   return this
 }
@@ -135,9 +141,17 @@ Thread.prototype.send = function (msg) {
   }
 }
 
+Thread.prototype.pool = function (num) {
+  num = num || 2
+  return pool(num, this)
+}
+
+pool.Thread = Thread
+
 Thread.prototype.terminate = Thread.prototype.kill = function () {
   if (!this._terminated) {
     this.options = {}
+    this.flushTasks().flush()
     this._terminated = true
     this._worker.terminate()
   }
@@ -147,8 +161,8 @@ Thread.prototype.terminate = Thread.prototype.kill = function () {
 Thread.prototype.start = Thread.prototype.init = function (options) {
   if (this._terminated) {
     this._setOptions(options)
-    this._terminated = false
     this._create()
+    this._terminated = false
   }
   return this
 }
