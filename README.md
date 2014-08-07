@@ -11,10 +11,10 @@
 **thread.js** is lightweight library that **simplifies JavaScript parallel computing in browser**
 environments through a featured, elegant and beautiful [programmatic API](#api)
 
-It allows you to run tasks in a non-blocking real thread, including support for provisining
+It allows you to run tasks in a non-blocking real thread, including support for provisioning
 the isolated thread scope in a simple way and allowing you to bind any type of value, including any serializable type, functions and remote scripts.
-It also provides built-in support for creating pool of threads and distributing the
-task load across different threads transparently
+It also provides built-in support for creating pool of threads to distribute the
+tasks load across multiple threads transparently
 
 It uses [Web Workers](http://en.wikipedia.org/wiki/Web_worker) to create real threads,
 but provides fallback support for older browsers based on an `iframe` hack.
