@@ -121,13 +121,22 @@ Return: `Task` Alias: `exec`
 
 Run a function in the thread context, optionally binding a custom context or passing function arguments
 
-```
-thread().run(function (num, done) {
-  done(null, this.x * num)
-}, { x: 2 }, [2]).then(function (result) {
+Binding a custom context
+```js
+thread().run(function (done) {
+  done(null, this.x * 2)
+}, { x: 2 }).then(function (result) {
   console.log(result) // -> 4
 })
 ```
+
+Passing arguments
+```js
+thread().run(function (num, done) {
+  done(null, num * this.x)
+}, { x: 2 }, [ 2 ]).then(function (result) {
+  console.log(result) // -> 4
+})
 
 #### Thread.pool(num)
 Return: `Thread`
