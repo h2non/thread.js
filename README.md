@@ -137,6 +137,7 @@ thread().run(function (num, done) {
 }, { x: 2 }, [ 2 ]).then(function (result) {
   console.log(result) // -> 4
 })
+```
 
 #### Thread.pool(num)
 Return: `Thread`
