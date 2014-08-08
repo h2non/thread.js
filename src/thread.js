@@ -6,6 +6,7 @@ var pool = require('./pool')
 
 var URL = window.URL || window.webkitURL
 var hasWorkers = _.isFn(window.Worker)
+var BlobBuilder = window.BlobBuilder || window.WebKitBlobBuilder || window.MozBlobBuilder
 
 module.exports = Thread
 
@@ -34,7 +35,7 @@ Thread.prototype._create = function () {
     try {
       blob = new Blob([src], { type: 'text/javascript' })
     } catch (e) {
-      blob = new (window.BlobBuilder || window.WebKitBlobBuilder || window.MozBlobBuilder)()
+      blob = new BlobBuilder()
       blob.append(src)
       blob = blob.getBlob()
     }
