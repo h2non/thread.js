@@ -45,7 +45,7 @@ cleanbrowser:
 
 mocha:
 	$(MOCHA_PHANTOM) --reporter spec --ui bdd test/runner.html
-	$(MOCHA) --reporter spec --ui bdd ./test/utils.js
+	$(MOCHA) --reporter spec --ui bdd test/utils.js
 
 testling:
 	$(TESTLING)
