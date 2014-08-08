@@ -108,7 +108,7 @@ task.then(function (array) {
 ## API
 
 ### thread([options])
-Return: `Thread` Alias: `thread.create`
+Return: `thread` Alias: `thread.create`
 
 Supported options:
 
@@ -131,7 +131,7 @@ thread({
 })
 ```
 
-#### Thread.run(fn, env, args)
+#### thread.run(fn, env, args)
 Return: `Task` Alias: `exec`
 
 Run a function in the thread context, optionally binding a custom context or passing function arguments
@@ -154,8 +154,8 @@ thread().run(function (num, done) {
 })
 ```
 
-#### Thread.pool(num)
-Return: `Thread`
+#### thread.pool(num)
+Return: `thread`
 
 Create a pool of threads and run tasks accross them
 
@@ -187,8 +187,8 @@ for (var i = 0; i < 50; i += 1) {
 }
 ```
 
-#### Thread.require(sources)
-Return: `Thread`
+#### thread.require(sources)
+Return: `thread`
 
 Add remote scripts, bind an object or functions to the thread isolated scope.
 It will be exposed in the global namespace (default `env`)
@@ -230,8 +230,8 @@ thread().require({
 })
 ```
 
-#### Thread.bind(obj)
-Return: `Thread`
+#### thread.bind(obj)
+Return: `thread`
 
 Bind a map of values to the isolated thread scope.
 You can do the same passing an object to `require()`
@@ -254,34 +254,34 @@ task.run(function (done) {
 })
 ```
 
-#### Thread.flush()
-Return: `Thread`
+#### thread.flush()
+Return: `thread`
 
 Flush the existent isolated thread scope
 
-#### Thread.send(msg)
-Return: `Thread`
+#### thread.send(msg)
+Return: `thread`
 
 Send a message directly to the current thread.
 Useful for specific use cases, but it's preferably do not use it
 
-#### Thread.kill()
-Return: `Thread` Alias: `terminate`
+#### thread.kill()
+Return: `thread` Alias: `terminate`
 
 Kill the thread current thread. All the cached data and config will be flushed
 
-#### Thread.start([options])
-Return: `Thread`
+#### thread.start([options])
+Return: `thread`
 
 Start (or restart) the current thread.
 If the thread was previously killed, you can reuse it calling this method
 
-#### Thread.pending()
+#### thread.pending()
 Return: `number`
 
 Return the pending running tasks on the current thread
 
-#### Thread.isRunning()
+#### thread.isRunning()
 Return: `boolean`
 
 Return `true` if the current thread has running tasks
@@ -291,7 +291,7 @@ Return: `Task`
 
 Create a new task in the given thread
 
-Normally you don't need to call it directly, it will done via `Thread.run()` factory
+Normally you don't need to call it directly, it will done via `thread.run()` factory
 
 #### Task.maxTaskDelay
 Value: `number` Default: `5000`
