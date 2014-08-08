@@ -670,17 +670,26 @@ function worker() {
       return o && Array.isArray ? Array.isArray(o) : toStr.call(o) === '[object Array]'
     }
 
+    function mapFields(obj) {
+      for (var key in obj) if (obj.hasOwnProperty(key)) {
+        if (fnRegex.test(key)) {
+          obj[key.replace('$$fn$$', '')] = $$evalExpr(obj[key])
+          obj[key] = undefined
+        } else {
+          obj[key] = obj[key]
+        }
+      }
+      return obj
+    }
+
     function extend(origin, target) {
       var i, l, key, args = slice.call(arguments).slice(1)
       for (i = 0, l = args.length; i < l; i += 1) {
         target = args[i]
         if (isObj(target)) {
-          for (key in target) if (target.hasOwnProperty(key)) {
-            if (fnRegex.test(key)) {
-              origin[key.replace('$$fn$$', '')] = $$evalExpr(target[key])
-            } else {
-              origin[key] = target[key]
-            }
+          target = mapFields(target)
+          for (key in target) if (target[key] !== undefined) {
+            origin[key] = target[key]
           }
         }
       }
@@ -821,7 +830,7 @@ function worker() {
     function process(msg) {
       var args = msg.args || []
       var fn = $$evalExpr(msg.src)
-      var ctx = isObj(msg.env) ? msg.env : self[namespace]
+      var ctx = isObj(msg.env) ? mapFields(msg.env) : self[namespace]
 
       if (fn.length === (args.length + 1)) {
         args.push(done(msg))
