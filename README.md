@@ -113,8 +113,23 @@ Return: `Thread` Alias: `thread.create`
 Supported options:
 
 - **env** `object` Custom environment to use in the isolated thread scope
-- **require** `array` Path list of scripts to load
+- **require** `string|array|object` Source path scripts to load or map of values/functions to bind
 - **namespace** `string` Global namespace to allocate the scope environment. Default to `env`
+
+```js
+thread({
+  namespace: 'global',
+  env: {
+    x: 10,
+    sqrt: function (n) {
+      return Math.sqrt(Math.pow(n, n))
+    }
+  },
+  require: [
+    'http://cdn.rawgit.com/h2non/hu/0.1.1/hu.js'
+  ]
+})
+```
 
 #### Thread.run(fn, env, args)
 Return: `Task` Alias: `exec`
