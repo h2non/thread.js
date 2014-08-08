@@ -10,12 +10,12 @@ var hasWorkers = _.isFn(window.Worker)
 module.exports = Thread
 
 function Thread(options) {
-  this.options = {}
   this._terminated = false
   this.maxTaskDelay = 5 * 1000
   this.id = _.generateUUID()
-  this._setOptions(options)
   this._tasks = []
+  this.options = {}
+  this._setOptions(options)
   this._create()
 }
 
@@ -42,28 +42,16 @@ Thread.prototype._create = function () {
   }
 
   if (hasWorkers && URL) {
-    this._worker = new Worker(blob)
+    this.worker = new Worker(blob)
   } else {
-    this._worker = new FakeWorker(this.id)
+    this.worker = new FakeWorker(this.id)
   }
 
-  this.send(_.extend({ type: 'start' }, { env: this.options.env, namespace: this.options.namespace }))
-  this._worker.addEventListener('error', function (e) { throw e })
+  this.send(_.extend({ type: 'start' }, { env: _.serializeMap(this.options.env), namespace: this.options.namespace }))
+  this.worker.addEventListener('error', function (e) { throw e })
   this.require(this.options.require)
 
   return this
-}
-
-Thread.prototype._serializeMap = function (obj) {
-  _.each(obj, function (fn, key) {
-    if (_.isFn(fn)) {
-      obj['$$fn$$' + key] = fn.toString()
-      obj[key] = undefined
-    } else {
-      obj[key] = fn
-    }
-  })
-  return obj
 }
 
 Thread.prototype.require = function (name, fn) {
@@ -81,7 +69,7 @@ Thread.prototype.require = function (name, fn) {
   } else if (_.isArr(name)) {
     this.send({ type: 'require:file', src: name })
   } else if (_.isObj(name)) {
-    this.send({ type: 'require:map', src: this._serializeMap(name) })
+    this.send({ type: 'require:map', src: _.serializeMap(name) })
   }
   return this
 }
@@ -117,7 +105,7 @@ Thread.prototype.run = Thread.prototype.exec = function (fn, env, args) {
 }
 
 Thread.prototype.bind = function (env) {
-  this.send({ type: 'env', data: this._serializeMap(env) })
+  this.send({ type: 'env', data: _.serializeMap(env) })
   return this
 }
 
@@ -136,14 +124,13 @@ Thread.prototype.flushTasks = function () {
 }
 
 Thread.prototype.send = function (msg) {
-  if (this._worker) {
-    this._worker.postMessage(msg)
+  if (this.worker) {
+    this.worker.postMessage(msg)
   }
 }
 
 Thread.prototype.pool = function (num) {
-  num = num || 2
-  return pool(num, this)
+  return pool(num || 2, this)
 }
 
 pool.Thread = Thread
@@ -153,7 +140,7 @@ Thread.prototype.terminate = Thread.prototype.kill = function () {
     this.options = {}
     this.flushTasks().flush()
     this._terminated = true
-    this._worker.terminate()
+    this.worker.terminate()
   }
   return this
 }
@@ -171,8 +158,26 @@ Thread.prototype.pending = function () {
   return this._tasks.length
 }
 
-Thread.prototype.isRunning = function () {
+Thread.prototype.running = function () {
   return this._tasks.length > 0
+}
+
+Thread.prototype.terminated = function () {
+  return !this.worker
+}
+
+Thread.prototype.on = Thread.prototype.addEventListener = function (type, fn) {
+  if (this.worker) {
+    this.worker.addEventListener(type, fn)
+  }
+  return this
+}
+
+Thread.prototype.off = Thread.prototype.removeEventListener = function (type, fn) {
+  if (this.worker && _.isFn(fn)) {
+    this.worker.removeEventListener(type, fn)
+  }
+  return this
 }
 
 Thread.Task = Task

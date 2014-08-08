@@ -197,11 +197,11 @@ var _ = require('./utils')
 
 module.exports = Task
 
-function Task(thread) {
+function Task(thread, env) {
   this.id = _.generateUUID()
   this.thread = thread
-  this.worker = thread._worker
-  this.env = {}
+  this.worker = thread.worker
+  this.env = env || {}
   this.time = this.memoized = null
   this.listeners = {
     error: [],
@@ -224,10 +224,13 @@ Task.prototype._getValue = function (data) {
 
 Task.prototype._trigger = function (value, type) {
   (function recur(pool) {
-    var fn = pool.shift()
-    if (fn) {
-      fn(value)
-      if (pool.length) recur(pool)
+    var fn
+    if (_.isArr(pool)) {
+      fn = pool.shift()
+      if (fn) {
+        fn(value)
+        if (pool.length) recur(pool)
+      }
     }
   })(this.listeners[type])
 }
@@ -255,25 +258,33 @@ Task.prototype._subscribe = function () {
   }
 }
 
-Task.prototype.setEnv = function (env) {
+Task.prototype.bind = function (env) {
   _.extend(this.env, env)
   return this
 }
 
 Task.prototype.run = function (fn, env, args) {
-  var maxDelay
+  var maxDelay, tasks
   this.time = new Date().getTime()
 
   if (!_.isFn(fn)) {
     throw new TypeError('first argument must be a function')
   }
 
-  env = _.extend({}, this.env, env)
+  env = _.serializeMap(_.extend({}, this.env, env))
   this.memoized = null
 
   maxDelay = this.thread.maxTaskDelay
   if (maxDelay > 250) {
     initInterval(maxDelay, this)
+  }
+
+  tasks = this.thread._tasks
+  if (tasks.indexOf(this) === -1) {
+    tasks.push(this)
+    this.finally(function () {
+      tasks.splice(tasks.indexOf(this), 1)
+    })
   }
 
   this.worker.postMessage({
@@ -326,25 +337,31 @@ Task.prototype.finally = function (fn) {
 }
 
 Task.prototype.flush = function () {
-  this.memoized = this.worker = this.env = null
+  this.memoized = this.thread =
+    this.worker = this.env = this.listeners = null
 }
 
-Task.create = function (options) {
-  return new Task(options)
+Task.prototype.flushed = function () {
+  return !this.thread && !this.worker
+}
+
+Task.create = function (thread) {
+  return new Task(thread)
 }
 
 function initInterval(maxDelay, self) {
-  var now = new Date().getTime()
+  var error, now = new Date().getTime()
   var timer = setInterval(function () {
     if (self.memoized) {
-      return clearInterval(timer)
-    }
-    if ((new Date().getTime() - now) > maxDelay) {
-      var error = new Error('maximum task execution exceeded')
-      self.memoized = { type: 'run:error', error: error }
-      self._trigger(error, 'error')
-      self._trigger(error, 'end')
       clearInterval(timer)
+    } else {
+      if ((new Date().getTime() - now) > maxDelay) {
+        error = new Error('maximum task execution exceeded')
+        self.memoized = { type: 'run:error', error: error }
+        self._trigger(error, 'error')
+        self._trigger(error, 'end')
+        clearInterval(timer)
+      }
     }
   }, 250)
 }
@@ -362,12 +379,12 @@ var hasWorkers = _.isFn(window.Worker)
 module.exports = Thread
 
 function Thread(options) {
-  this.options = {}
   this._terminated = false
   this.maxTaskDelay = 5 * 1000
   this.id = _.generateUUID()
-  this._setOptions(options)
   this._tasks = []
+  this.options = {}
+  this._setOptions(options)
   this._create()
 }
 
@@ -394,28 +411,16 @@ Thread.prototype._create = function () {
   }
 
   if (hasWorkers && URL) {
-    this._worker = new Worker(blob)
+    this.worker = new Worker(blob)
   } else {
-    this._worker = new FakeWorker(this.id)
+    this.worker = new FakeWorker(this.id)
   }
 
-  this.send(_.extend({ type: 'start' }, { env: this.options.env, namespace: this.options.namespace }))
-  this._worker.addEventListener('error', function (e) { throw e })
+  this.send(_.extend({ type: 'start' }, { env: _.serializeMap(this.options.env), namespace: this.options.namespace }))
+  this.worker.addEventListener('error', function (e) { throw e })
   this.require(this.options.require)
 
   return this
-}
-
-Thread.prototype._serializeMap = function (obj) {
-  _.each(obj, function (fn, key) {
-    if (_.isFn(fn)) {
-      obj['$$fn$$' + key] = fn.toString()
-      obj[key] = undefined
-    } else {
-      obj[key] = fn
-    }
-  })
-  return obj
 }
 
 Thread.prototype.require = function (name, fn) {
@@ -433,7 +438,7 @@ Thread.prototype.require = function (name, fn) {
   } else if (_.isArr(name)) {
     this.send({ type: 'require:file', src: name })
   } else if (_.isObj(name)) {
-    this.send({ type: 'require:map', src: this._serializeMap(name) })
+    this.send({ type: 'require:map', src: _.serializeMap(name) })
   }
   return this
 }
@@ -469,7 +474,7 @@ Thread.prototype.run = Thread.prototype.exec = function (fn, env, args) {
 }
 
 Thread.prototype.bind = function (env) {
-  this.send({ type: 'env', data: this._serializeMap(env) })
+  this.send({ type: 'env', data: _.serializeMap(env) })
   return this
 }
 
@@ -488,14 +493,13 @@ Thread.prototype.flushTasks = function () {
 }
 
 Thread.prototype.send = function (msg) {
-  if (this._worker) {
-    this._worker.postMessage(msg)
+  if (this.worker) {
+    this.worker.postMessage(msg)
   }
 }
 
 Thread.prototype.pool = function (num) {
-  num = num || 2
-  return pool(num, this)
+  return pool(num || 2, this)
 }
 
 pool.Thread = Thread
@@ -505,7 +509,7 @@ Thread.prototype.terminate = Thread.prototype.kill = function () {
     this.options = {}
     this.flushTasks().flush()
     this._terminated = true
-    this._worker.terminate()
+    this.worker.terminate()
   }
   return this
 }
@@ -523,8 +527,26 @@ Thread.prototype.pending = function () {
   return this._tasks.length
 }
 
-Thread.prototype.isRunning = function () {
+Thread.prototype.running = function () {
   return this._tasks.length > 0
+}
+
+Thread.prototype.terminated = function () {
+  return !this.worker
+}
+
+Thread.prototype.on = Thread.prototype.addEventListener = function (type, fn) {
+  if (this.worker) {
+    this.worker.addEventListener(type, fn)
+  }
+  return this
+}
+
+Thread.prototype.off = Thread.prototype.removeEventListener = function (type, fn) {
+  if (this.worker && _.isFn(fn)) {
+    this.worker.removeEventListener(type, fn)
+  }
+  return this
 }
 
 Thread.Task = Task
@@ -534,31 +556,31 @@ var _ = exports
 var toStr = Object.prototype.toString
 var slice = Array.prototype.slice
 
-exports.isFn = function isFn(obj) {
+exports.isFn = function (obj) {
   return typeof obj === 'function'
 }
 
-exports.isObj = function isObj(o) {
+exports.isObj = function (o) {
   return o && toStr.call(o) === '[object Object]'
 }
 
-exports.isArr = function isArr(o) {
+exports.isArr = function (o) {
   return o && toStr.call(o) === '[object Array]'
 }
 
-exports.toArr = function toArr(args) {
+exports.toArr = function (args) {
   return slice.call(args)
 }
 
-exports.defer = function defer(fn) {
+exports.defer = function (fn) {
   setTimeout(fn, 1)
 }
 
-exports.bind = function bind(ctx, fn) {
+exports.bind = function (ctx, fn) {
   return function () { fn.apply(ctx, arguments) }
 }
 
-exports.each = function each(obj, fn) {
+exports.each = function (obj, fn) {
   var i, l
   if (_.isArr(obj)) {
     for (i = 0, l = obj.length; i < l; i += 1) {
@@ -571,7 +593,7 @@ exports.each = function each(obj, fn) {
   }
 }
 
-exports.extend = function extend(target) {
+exports.extend = function (target) {
   var args = _.toArr(arguments).slice(1)
   _.each(args, function (obj) {
     _.each(obj, function (value, key) {
@@ -581,19 +603,31 @@ exports.extend = function extend(target) {
   return target
 }
 
-exports.clone = function clone(obj) {
+exports.clone = function (obj) {
   return _.extend({}, obj)
 }
 
-exports.getSource = function getSource(fn) {
+exports.getSource = function (fn) {
   return '(' + fn.toString() + ').call(this)'
 }
 
-exports.fnName = function fnName(fn) {
+exports.fnName = function (fn) {
   return fn.name || /\W*function\s+([\w\$]+)\(/.exec(fn.toString())[1]
 }
 
-exports.generateUUID = function generateUUID() {
+exports.serializeMap = function (obj) {
+  if (_.isObj(obj)) {
+    _.each(obj, function (fn, key) {
+      if (_.isFn(fn)) {
+        obj['$$fn$$' + key] = fn.toString()
+        obj[key] = undefined
+      }
+    })
+  }
+  return obj
+}
+
+exports.generateUUID = function () {
   var d = new Date().getTime()
   var uuid = 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
     var r = (d + Math.random() * 16) % 16 | 0

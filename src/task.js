@@ -2,11 +2,11 @@ var _ = require('./utils')
 
 module.exports = Task
 
-function Task(thread) {
+function Task(thread, env) {
   this.id = _.generateUUID()
   this.thread = thread
-  this.worker = thread._worker
-  this.env = {}
+  this.worker = thread.worker
+  this.env = env || {}
   this.time = this.memoized = null
   this.listeners = {
     error: [],
@@ -29,10 +29,13 @@ Task.prototype._getValue = function (data) {
 
 Task.prototype._trigger = function (value, type) {
   (function recur(pool) {
-    var fn = pool.shift()
-    if (fn) {
-      fn(value)
-      if (pool.length) recur(pool)
+    var fn
+    if (_.isArr(pool)) {
+      fn = pool.shift()
+      if (fn) {
+        fn(value)
+        if (pool.length) recur(pool)
+      }
     }
   })(this.listeners[type])
 }
@@ -60,25 +63,33 @@ Task.prototype._subscribe = function () {
   }
 }
 
-Task.prototype.setEnv = function (env) {
+Task.prototype.bind = function (env) {
   _.extend(this.env, env)
   return this
 }
 
 Task.prototype.run = function (fn, env, args) {
-  var maxDelay
+  var maxDelay, tasks
   this.time = new Date().getTime()
 
   if (!_.isFn(fn)) {
     throw new TypeError('first argument must be a function')
   }
 
-  env = _.extend({}, this.env, env)
+  env = _.serializeMap(_.extend({}, this.env, env))
   this.memoized = null
 
   maxDelay = this.thread.maxTaskDelay
   if (maxDelay > 250) {
     initInterval(maxDelay, this)
+  }
+
+  tasks = this.thread._tasks
+  if (tasks.indexOf(this) === -1) {
+    tasks.push(this)
+    this.finally(function () {
+      tasks.splice(tasks.indexOf(this), 1)
+    })
   }
 
   this.worker.postMessage({
@@ -131,25 +142,31 @@ Task.prototype.finally = function (fn) {
 }
 
 Task.prototype.flush = function () {
-  this.memoized = this.worker = this.env = null
+  this.memoized = this.thread =
+    this.worker = this.env = this.listeners = null
 }
 
-Task.create = function (options) {
-  return new Task(options)
+Task.prototype.flushed = function () {
+  return !this.thread && !this.worker
+}
+
+Task.create = function (thread) {
+  return new Task(thread)
 }
 
 function initInterval(maxDelay, self) {
-  var now = new Date().getTime()
+  var error, now = new Date().getTime()
   var timer = setInterval(function () {
     if (self.memoized) {
-      return clearInterval(timer)
-    }
-    if ((new Date().getTime() - now) > maxDelay) {
-      var error = new Error('maximum task execution exceeded')
-      self.memoized = { type: 'run:error', error: error }
-      self._trigger(error, 'error')
-      self._trigger(error, 'end')
       clearInterval(timer)
+    } else {
+      if ((new Date().getTime() - now) > maxDelay) {
+        error = new Error('maximum task execution exceeded')
+        self.memoized = { type: 'run:error', error: error }
+        self._trigger(error, 'error')
+        self._trigger(error, 'end')
+        clearInterval(timer)
+      }
     }
   }, 250)
 }

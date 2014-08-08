@@ -7,11 +7,11 @@
     <script>
       // simple example passing custom context
 
-      var job = thread({
+      var worker = thread({
         env: { error: true }
       })
 
-      var task = job.run(function (done) {
+      var task = worker.run(function (done) {
         setTimeout(function () {
           if (env.error) {
             done('invalid')
@@ -26,14 +26,14 @@
       }, 100)
 
       // load remote script dependency
-      var job2 = thread({
+      var worker2 = thread({
         require: {
           defer: function (fn, ms) { setTimeout(fn, ms) }
         },
         env: { x: 2 }
       })
 
-      var task2 = job2.run(function (done) {
+      var task2 = worker2.run(function (done) {
         var sum = env.x * 2
         env.defer(function () {
           if (env.x) {
@@ -50,9 +50,9 @@
         console.log('Finally:', data)
       })
 
-      console.log('Pending before:', job2.pending())
+      console.log('Pending before:', worker2.pending())
       setTimeout(function () {
-        console.log('Pending after:', job2.pending())
+        console.log('Pending after:', worker2.pending())
       }, 1000)
 
     </script>

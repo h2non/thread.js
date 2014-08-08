@@ -9,15 +9,15 @@
 </table>
 
 **thread.js** is lightweight library that **simplifies JavaScript parallel computing in browser**
-environments through a featured, simple and beautiful [programmatic API](#api)
+environments through a simple but featured and elegant [programmatic API](#api)
 
 It allows you to run tasks in a non-blocking real thread, including support for provisioning
 the isolated thread scope in a simple way and allowing you to bind any type of value, including any serializable type, functions and remote scripts.
 It also provides built-in support for creating pool of threads to distribute the
-tasks load across multiple threads transparently
+tasks load across multiple threads transparently usin a simple best availability schedule algorithm
 
 It uses [Web Workers](http://en.wikipedia.org/wiki/Web_worker) to create real threads,
-but provides fallback support for older browsers based on an `iframe` hack.
+but provides fallback support for older browsers based on an `iframe` hack
 
 Welcome to the multi-thread world in JavaScript. You could start reading some [examples](#basic-usage)
 
@@ -37,7 +37,7 @@ $ component install h2non/thread.js
 
 Or loading the script remotely (just for testing or development)
 ```html
-<script src="//cdn.rawgit.com/h2non/thread.js/0.1.0-rc.1/thread.js"></script>
+<script src="//cdn.rawgit.com/h2non/thread.js/0.1.0-rc.2/thread.js"></script>
 ```
 
 ### Environments
@@ -61,7 +61,7 @@ var thread = require('thread')
 
 Create a new thread with custom scope and library dependencies
 ```js
-var job = thread({
+var worker = thread({
   env: { numbers: [1,2,3] },
   require: [
     'http://cdnjs.cloudflare.com/ajax/libs/lodash.js/2.4.1/lodash.js'
@@ -71,7 +71,7 @@ var job = thread({
 
 Synchronous example
 ```js
-var task = job.run(function () {
+var task = worker.run(function () {
   return _.sortBy(env.numbers, function (num) {
     return Math.sin(num)
   })
@@ -80,7 +80,7 @@ var task = job.run(function () {
 
 Asynchronous example
 ```js
-var task = job.run(function (done) {
+var task = worker.run(function (done) {
   doAsyncStuff(function () {
     var sorted = _.sortBy(env.numbers, function (num) {
       return Math.sin(num)
@@ -112,7 +112,7 @@ Return: `thread` Alias: `thread.create`
 
 Supported options:
 
-- **env** `object` Custom environment to use in the isolated thread scope
+- **env** `object` Custom environment to bind to the isolated thread scope
 - **require** `string|array|object` Source path scripts to load or map of values/functions to bind
 - **namespace** `string` Global namespace to allocate the scope environment. Default to `env`
 
@@ -132,7 +132,7 @@ thread({
 ```
 
 #### thread.run(fn, env, args)
-Return: `Task` Alias: `exec`
+Return: `task` Alias: `exec`
 
 Run a function in the thread context, optionally binding a custom context or passing function arguments
 
@@ -257,18 +257,56 @@ task.run(function (done) {
 #### thread.flush()
 Return: `thread`
 
-Flush the existent isolated thread scope
+Flush the thread cached data and scope environment.
+If you flush the data, you will need
+
+```js
+var worker = thread().bind({ x: 2 })
+worker.env
+```
+
+#### thread.flushTasks()
+Return: `thread`
+
+Flush running tasks promises and clean cached values
+
+```js
+var worker = thread()
+worker.run(doLongTask)
+worker.flushTasks()
+console.log(worker.pending()) // -> 0
+```
 
 #### thread.send(msg)
 Return: `thread`
 
 Send a message directly to the current thread.
-Useful for specific use cases, but it's preferably do not use it
+Useful for specific use cases, but it's preferably do not use it directly.
+Use the `run()` abstraction instead
+
+Be aware about passing non-serialize data types such as native JavaScript objects,
+DOM nodes, objects with self-references...
+
+```js
+var worker = thread()
+worker.send({ type: 'msg', data: 'hello world' })
+
+```
 
 #### thread.kill()
 Return: `thread` Alias: `terminate`
 
-Kill the thread current thread. All the cached data and config will be flushed
+Kill the current thread. All the cached data, scope environment and config options will be flushed,
+including in worker isolated scope
+
+It's recommended you explicit kill any unused thread in order to avoid memory issues in long term computations
+
+```js
+var worker = thread()
+worker.run(longTask).then(function () {
+  worker.kill()
+})
+```
 
 #### thread.start([options])
 Return: `thread`
@@ -276,49 +314,156 @@ Return: `thread`
 Start (or restart) the current thread.
 If the thread was previously killed, you can reuse it calling this method
 
+```js
+var options = { env: { x: 2 } }
+var worker = thread(options)
+worker.kill() // explicit kill
+worker.start(options) // explicit re-start, passing the same options
+```
+
 #### thread.pending()
 Return: `number`
 
 Return the pending running tasks on the current thread
 
-#### thread.isRunning()
+```js
+var worker = thread()
+var task = worker.run(longAsyncTask)
+worker.pending() // -> 1
+task.then(function () {
+  worker.pending() // -> 0
+})
+```
+
+#### thread.running()
 Return: `boolean`
 
 Return `true` if the current thread has running tasks
 
-### thread.Task(thread)
-Return: `Task`
+```js
+thread().run(longAsyncTask).running() // -> true
+thread().run(tinySyncTask).running() // -> false
+```
+
+#### thread.terminated()
+Return: `boolean`
+
+Return `true` if the current thread is under terminated status
+
+```js
+thread().terminated() // -> false
+thread().kill().terminated() // -> true
+```
+
+#### thread.on(type, handler)
+Return: `thread` Alias: `addEventListener`
+
+Add a custom worker event handler. By default you don't need to handle
+events directly, use it only for exceptional specific purposes
+
+Supported event types are `error` and `message`
+
+#### thread.off(type, handler)
+Return: `thread` Alias: `removeEventListener`
+
+Remove a worker event listener.
+It's required to pass the original handler function in order to remove it
+
+### thread.Task(thread, env)
+Return: `task`
 
 Create a new task in the given thread
 
 Normally you don't need to call it directly, it will done via `thread.run()` factory
 
-#### Task.maxTaskDelay
+```js
+var worker = thread({ env: { x: 2 }})
+var task = new thread.Task(worker, { y: 2 })
+task.run(function () {
+  return env.x * this.y
+}).then(function (result) {
+  console.log(result) // -> 4
+})
+```
+
+#### task.maxtaskDelay
 Value: `number` Default: `5000`
 
 The maximum amount of time that a task can take in miliseconds.
 If the task computation exceed this, it will be exit as error
 
-#### Task.then(successFn [, errorFn])
-Return: `Task`
+#### task.then(successFn [, errorFn])
+Return: `task`
 
 Add success and error (optionally) result handlers for the current task
 
-#### Task.catch(errorFn)
-Return: `Task`
+```js
+var worker = thread()
+vas task = new thread.Task(worker)
+task.run(longAsyncTask).then(function (result) {
+  console.log(result)
+})
+```
+
+#### task.catch(errorFn)
+Return: `task`
 
 Add an error handlers for the current task
 
-#### Task.finally(finalFn)
-Return: `Task`
+```js
+var worker = thread()
+vas task = new thread.Task(worker)
+task.run(longAsyncTask).catch(function (err) {
+  console.log(err)
+})
+```
+
+#### task.finally(finalFn)
+Return: `task`
 
 Add a final handler for the current task.
 It will be ejecuted when the task finished with `success` or `error` state
 
-#### Task.flush()
-Return: `Task`
+```js
+var worker = thread()
+vas task = new thread.Task(worker)
+task.run(longAsyncTask).finally(function (result) {
+  console.log(result)
+})
+```
+
+#### task.bind(obj)
+Return: `task`
+
+Bind custom map environment to the current task scope
+
+```js
+var worker = thread()
+vas task = new thread.Task(worker)
+task.bind({ x: 2 })
+task.run(function () {
+  return this.x * 2
+}).then(function (result) {
+  console.log(result) // -> 4
+})
+```
+
+#### task.flush()
+Return: `task`
 
 Flush cached result data and set the initial task state
+
+```js
+var worker = thread()
+vas task = new thread.Task(worker)
+task.flush()
+task.flushed() // -> true
+```
+
+#### task.flushed()
+Return: `boolean`
+
+Return `true` if task data was already flushed
 
 ## Contributing
 

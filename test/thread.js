@@ -336,13 +336,13 @@ describe('thread', function () {
     })
 
     it('should be running', function () {
-      expect(job.isRunning()).to.be.true
+      expect(job.running()).to.be.true
     })
 
     it('should not be running when tasks finished', function (done) {
       setTimeout(function () {
         expect(job.pending()).to.be.equal(1)
-        expect(job.isRunning()).to.be.true
+        expect(job.running()).to.be.true
         done()
       }, 300)
     })
