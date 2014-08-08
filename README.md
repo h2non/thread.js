@@ -8,8 +8,8 @@
 </tr>
 </table>
 
-**thread.js** is lightweight library that **simplifies JavaScript parallel computing in browser**
-environments through a simple but featured and elegant [programmatic API](#api)
+**thread.js** is lightweight rich-featured library that **simplifies JavaScript parallel computing in browser**
+environments through a simple and elegant [programmatic API](#api)
 
 It allows you to run tasks in a non-blocking real thread, including support for provisioning
 the isolated thread scope in a simple way and allowing you to bind any type of value, including any serializable type, functions and remote scripts.
