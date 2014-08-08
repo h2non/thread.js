@@ -267,9 +267,8 @@ Task.prototype.run = function (fn, env, args) {
   var maxDelay, tasks
   this.time = new Date().getTime()
 
-  if (!_.isFn(fn)) {
-    throw new TypeError('first argument must be a function')
-  }
+  if (!_.isFn(fn)) throw new TypeError('first argument must be a function')
+  if (_.isArr(env)) args = env
 
   env = _.serializeMap(_.extend({}, this.env, env))
   this.memoized = null
@@ -613,7 +612,7 @@ exports.getSource = function (fn) {
 }
 
 exports.fnName = function (fn) {
-  return fn.name || /\W*function\s+([\w\$]+)\(/.exec(fn.toString())[1]
+  return fn.name || (fn = /\W*function\s+([\w\$]+)\(/.exec(fn.toString()) ? fn[1] : '')
 }
 
 exports.serializeMap = function (obj) {

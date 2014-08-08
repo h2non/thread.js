@@ -72,9 +72,8 @@ Task.prototype.run = function (fn, env, args) {
   var maxDelay, tasks
   this.time = new Date().getTime()
 
-  if (!_.isFn(fn)) {
-    throw new TypeError('first argument must be a function')
-  }
+  if (!_.isFn(fn)) throw new TypeError('first argument must be a function')
+  if (_.isArr(env)) args = env
 
   env = _.serializeMap(_.extend({}, this.env, env))
   this.memoized = null

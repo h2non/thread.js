@@ -58,7 +58,7 @@ exports.getSource = function (fn) {
 }
 
 exports.fnName = function (fn) {
-  return fn.name || /\W*function\s+([\w\$]+)\(/.exec(fn.toString())[1]
+  return fn.name || (fn = /\W*function\s+([\w\$]+)\(/.exec(fn.toString()) ? fn[1] : '')
 }
 
 exports.serializeMap = function (obj) {
