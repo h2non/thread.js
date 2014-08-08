@@ -22,7 +22,7 @@ but provides fallback support for older browsers based on an `iframe` hack.
 Welcome to the multi-thread world in JavaScript. You could start reading some [examples](#basic-usage)
 
 **Note**: the library is still in beta stage. A deep cross-browser testing is still pending.
-Do not use it production environments
+Do not use it in production environments
 
 ## Installation
 
