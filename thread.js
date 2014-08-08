@@ -532,6 +532,7 @@ Thread.Task = Task
 },{"./fake-worker":1,"./pool":3,"./task":4,"./utils":6,"./worker":7}],6:[function(require,module,exports){
 var _ = exports
 var toStr = Object.prototype.toString
+var slice = Array.prototype.slice
 
 exports.isFn = function isFn(obj) {
   return typeof obj === 'function'
@@ -546,7 +547,7 @@ exports.isArr = function isArr(o) {
 }
 
 exports.toArr = function toArr(args) {
-  return Array.prototype.slice.call(args)
+  return slice.call(args)
 }
 
 exports.defer = function defer(fn) {
