@@ -325,6 +325,9 @@ Install dependencies
 ```bash
 $ npm install
 ```
+```bash
+$ bower install
+```
 
 Generate browser bundle source
 ```bash

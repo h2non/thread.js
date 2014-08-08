@@ -1,0 +1,35 @@
+{
+  "name": "thread",
+  "repo": "h2non/thread.js",
+  "description": "The definitive library for real parallel non-blocking thread-based processing in the browser",
+  "scripts": ["thread.js", "thread.min.js"],
+  "license": "MIT",
+  "keywords": [
+    "parallel",
+    "worker",
+    "webworker",
+    "processing",
+    "process",
+    "fork",
+    "compute",
+    "non-blocking",
+    "blocking",
+    "multiprocess",
+    "child",
+    "multicore"
+  ],
+  "ignore": [
+    "**/.*",
+    ".*",
+    "*.md",
+    "src",
+    "lib",
+    "test",
+    "Makefile",
+    ".editorconfig",
+    ".gitignore",
+    ".travis.yml",
+    ".npmignore",
+    "package.json"
+  ]
+}
