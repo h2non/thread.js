@@ -8,20 +8,19 @@
 </tr>
 </table>
 
-**thread.js** is lightweight rich-featured library that **simplifies JavaScript parallel computing in browser**
+**thread.js** is lightweight and rich featured library that **simplifies JavaScript parallel computing in browser**
 environments through a simple and elegant [programmatic API](#api)
 
-It allows you to run tasks in a non-blocking real thread, including support for provisioning
-the isolated thread scope in a simple way and allowing you to bind any type of value, including any serializable type, functions and remote scripts.
+It allows you to run tasks in a non-blocking real thread in a really simple way.
 It also provides built-in support for creating pool of threads to distribute the
-tasks load across multiple threads transparently usin a simple best availability schedule algorithm
+task load across multiple workers transparently using a simple best availability schedule algorithm
 
 It uses [Web Workers](http://en.wikipedia.org/wiki/Web_worker) to create real threads,
 but provides fallback support for older browsers based on an `iframe` hack
 
 Welcome to the multi-thread world in JavaScript. You could start reading some [examples](#basic-usage)
 
-**Note**: the library is still in beta stage. A deep cross-browser testing is still pending.
+**Note**: the library is still in beta stage. A deep cross-browser testing is pending.
 Do not use it in production environments
 
 ## Installation
@@ -42,7 +41,7 @@ Or loading the script remotely (just for testing or development)
 
 ### Environments
 
-Cross-browser support guaranteed passing tests in [Testling](https://ci.testling.com/)
+Cross-browser support guaranteed running tests in [Testling](https://ci.testling.com/)
 
 - Chrome >= 5
 - Firefox >= 3
