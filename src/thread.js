@@ -48,7 +48,10 @@ Thread.prototype._create = function () {
     this.worker = new FakeWorker(this.id)
   }
 
-  this.send(_.extend({ type: 'start' }, { env: _.serializeMap(this.options.env), namespace: this.options.namespace }))
+  this.send(_.extend({ type: 'start' }, {
+    env: _.serializeMap(this.options.env),
+    namespace: this.options.namespace
+  }))
   this.worker.addEventListener('error', function (e) { throw e })
   this.require(this.options.require)
 
@@ -87,13 +90,11 @@ Thread.prototype.run = Thread.prototype.exec = function (fn, env, args) {
     args = env
     env = arguments[2]
   }
-  if (!_.isFn(fn)) {
-    throw new TypeError('missing function argument')
-  }
 
   if (fn instanceof Task) {
     task = fn
   } else {
+    if (!_.isFn(fn)) throw new TypeError('missing function argument')
     task = new Task(this)
   }
 
@@ -102,6 +103,7 @@ Thread.prototype.run = Thread.prototype.exec = function (fn, env, args) {
     tasks.splice(tasks.indexOf(task), 1)
   })
   _.defer(function () { task.run(fn, env, args) })
+
   return task
 }
 
