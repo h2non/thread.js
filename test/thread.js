@@ -9,6 +9,8 @@ if (typeof __testlingConsole !== 'undefined') {
 
 describe('thread', function () {
 
+  function defer(fn, ms) { setTimeout(fn, 1) }
+
   describe('api', function () {
     it('should expose the thread factory', function () {
       expect(thread).to.be.a('function')
@@ -151,11 +153,28 @@ describe('thread', function () {
     })
   })
 
+  describe('import external script as string', function () {
+    var task = null
+    var job = thread({
+      require: 'http://cdn.rawgit.com/h2non/hu/0.1.1/hu.js'
+    })
+
+    it('should run a task', function () {
+      task = job.run(function () {
+        return hu.reverse('hello')
+      })
+    })
+
+    it('should have a valid result', function (done) {
+      task.then(function (value) {
+        expect(value).to.be.equal('olleh')
+        done()
+      })
+    })
+  })
+
   describe('pass function as require context', function () {
     var task = null
-
-    function defer(fn, ms) { setTimeout(fn, 1) }
-
     var job = thread({
       env: {
         x: 2
@@ -184,9 +203,6 @@ describe('thread', function () {
 
   describe('pass function to worker via require', function () {
     var task = null
-
-    function defer(fn, ms) { setTimeout(fn, 1) }
-
     var job = thread({
       env: { x: 2 }
     }).require('defer', defer)
