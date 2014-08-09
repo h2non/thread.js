@@ -57,7 +57,7 @@ Task.prototype.bind = function (env) {
 
 Task.prototype.run = function (fn, env, args) {
   var maxDelay, tasks
-  this.time = new Date().getTime()
+  this.time = _.now()
 
   if (!_.isFn(fn)) throw new TypeError('first argument must be a function')
   if (_.isArr(env)) args = env
@@ -141,12 +141,12 @@ Task.create = function (thread) {
 }
 
 function initInterval(maxDelay, self) {
-  var error, now = new Date().getTime()
+  var error, now = _.now()
   var timer = setInterval(function () {
     if (self.memoized) {
       clearInterval(timer)
     } else {
-      if ((new Date().getTime() - now) > maxDelay) {
+      if ((_.now() - now) > maxDelay) {
         error = new Error('maximum task execution exceeded')
         self.memoized = { type: 'run:error', error: error }
         self._trigger(error, 'error')

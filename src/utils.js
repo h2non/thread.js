@@ -2,6 +2,10 @@ var _ = exports
 var toStr = Object.prototype.toString
 var slice = Array.prototype.slice
 
+exports.now = function () {
+  return new Date().getTime()
+}
+
 exports.isFn = function (obj) {
   return typeof obj === 'function'
 }
