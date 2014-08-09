@@ -16,6 +16,8 @@ function Task(thread, env) {
   this._subscribe()
 }
 
+Task.intervalCheckTime = 250
+
 Task.prototype._buildError = function (data) {
   var err = new Error(data.error)
   err.name = data.errorName
@@ -28,8 +30,11 @@ Task.prototype._getValue = function (data) {
 }
 
 Task.prototype._trigger = function (value, type) {
-  var self = this
-  (function recur(pool) {
+  dispatcher(this, value)(this.listeners[type])
+}
+
+function dispatcher(self, value) {
+  return function recur(pool) {
     var fn
     if (_.isArr(pool)) {
       fn = pool.shift()
@@ -38,30 +43,11 @@ Task.prototype._trigger = function (value, type) {
         if (pool.length) recur(pool)
       }
     }
-  })(this.listeners[type])
+  }
 }
 
 Task.prototype._subscribe = function () {
-  var self = this
-  this.worker.addEventListener('message', onMessage)
-
-  function onMessage(ev) {
-    var dispatch
-    var data = ev.data
-    var type = data.type
-    var list = self.listeners
-
-    if (data && data.id === self.id) {
-      if (type === 'run:error' || type === 'run:success') {
-        self.worker.removeEventListener('message', onMessage)
-        self.memoized = ev.data
-
-        data = self._getValue(data)
-        self._trigger(data, type.split(':')[1])
-        self._trigger(data, 'end')
-      }
-    }
-  }
+  this.worker.addEventListener('message', onMessage(this))
 }
 
 Task.prototype.bind = function (env) {
@@ -80,7 +66,7 @@ Task.prototype.run = function (fn, env, args) {
   this.memoized = null
 
   maxDelay = this.thread.maxTaskDelay
-  if (maxDelay > 250) {
+  if (maxDelay > Task.intervalCheckTime) {
     initInterval(maxDelay, this)
   }
 
@@ -168,5 +154,25 @@ function initInterval(maxDelay, self) {
         clearInterval(timer)
       }
     }
-  }, 250)
+  }, Task.intervalCheckTime)
+}
+
+function onMessage(self) {
+  return function handler(ev) {
+    var dispatch
+    var data = ev.data
+    var type = data.type
+    var list = self.listeners
+
+    if (data && data.id === self.id) {
+      if (type === 'run:error' || type === 'run:success') {
+        self.worker.removeEventListener('message', handler)
+        self.memoized = ev.data
+
+        data = self._getValue(data)
+        self._trigger(data, type.split(':')[1])
+        self._trigger(data, 'end')
+      }
+    }
+  }
 }

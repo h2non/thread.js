@@ -8,6 +8,7 @@ if (typeof __testlingConsole !== 'undefined') {
 }
 
 describe('pool', function () {
+
   describe('run tasks binding a context', function () {
     var task, results = []
     var job = thread({ env: { x: 2 } }).pool(4)
@@ -23,8 +24,9 @@ describe('pool', function () {
     })
 
     it('should have a valid result', function (done) {
-      task.then(function () {
+      task.finally(function () {
         expect(results).to.be.deep.equal([4,4,4,4])
+        expect(job.pending()).to.be.equal(0)
         done()
       })
     })
@@ -45,11 +47,37 @@ describe('pool', function () {
     })
 
     it('should have a valid result', function (done) {
-      task.then(function () {
+      task.finally(function () {
         expect(results).to.be.deep.equal([4,4,4,4])
         expect(job.pending()).to.be.equal(0)
         done()
       })
     })
   })
+
+  describe('run tasks asynchronously passing arguments', function () {
+    var task, results = []
+    var job = thread({ env: { x: 2 } }).pool(4)
+
+    it('should run multiple tasks', function () {
+      while (job.threadPool.length !== 4) {
+        task = job.run(function (num, done) {
+          return setTimeout(function () {
+            done(null, env.x * num)
+          }, 100)
+        }, [ 2 ]).then(function (value) {
+          results.push(value)
+        })
+      }
+    })
+
+    it('should have a valid result', function (done) {
+      task.finally(function () {
+        expect(results).to.be.deep.equal([4,4,4,4])
+        expect(job.pending()).to.be.equal(0)
+        done()
+      })
+    })
+  })
+
 })
