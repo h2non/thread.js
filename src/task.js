@@ -28,12 +28,13 @@ Task.prototype._getValue = function (data) {
 }
 
 Task.prototype._trigger = function (value, type) {
+  var self = this
   (function recur(pool) {
     var fn
     if (_.isArr(pool)) {
       fn = pool.shift()
       if (fn) {
-        fn(value)
+        fn.call(self, value)
         if (pool.length) recur(pool)
       }
     }
@@ -106,7 +107,7 @@ Task.prototype.then = function (fn, errorFn) {
   if (_.isFn(fn)) {
     if (this.memoized) {
       if (this.memoized.type === 'run:success')
-        fn(this._getValue(this.memoized))
+        fn.call(this, this._getValue(this.memoized))
     } else {
       this.listeners.success.push(fn)
     }
@@ -121,7 +122,7 @@ Task.prototype.catch = function (fn) {
   if (_.isFn(fn)) {
     if (this.memoized) {
       if (this.memoized.type === 'run:error')
-        fn(this._getValue(this.memoized))
+        fn.call(this, this._getValue(this.memoized))
     } else {
       this.listeners.error.push(fn)
     }
@@ -132,7 +133,7 @@ Task.prototype.catch = function (fn) {
 Task.prototype.finally = function (fn) {
   if (_.isFn(fn)) {
     if (this.memoized) {
-      fn(this._getValue(this.memoized))
+      fn.call(this, this._getValue(this.memoized))
     } else {
       this.listeners.end.push(fn)
     }

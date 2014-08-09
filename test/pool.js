@@ -8,7 +8,7 @@ if (typeof __testlingConsole !== 'undefined') {
 }
 
 describe('pool', function () {
-  describe('pool of threads', function () {
+  describe('run tasks binding a context', function () {
     var task, results = []
     var job = thread({ env: { x: 2 } }).pool(4)
 
@@ -25,6 +25,29 @@ describe('pool', function () {
     it('should have a valid result', function (done) {
       task.then(function () {
         expect(results).to.be.deep.equal([4,4,4,4])
+        done()
+      })
+    })
+  })
+
+  describe('run tasks passing arguments', function () {
+    var task, results = []
+    var job = thread({ env: { x: 2 } }).pool(4)
+
+    it('should run multiple tasks', function () {
+      while (job.threadPool.length !== 4) {
+        task = job.run(function (num) {
+          return env.x * num
+        }, [ 2 ]).then(function (value) {
+          results.push(value)
+        })
+      }
+    })
+
+    it('should have a valid result', function (done) {
+      task.then(function () {
+        expect(results).to.be.deep.equal([4,4,4,4])
+        expect(job.pending()).to.be.equal(0)
         done()
       })
     })
