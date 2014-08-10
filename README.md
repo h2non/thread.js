@@ -15,7 +15,7 @@ It allows you to run tasks in a non-blocking real thread in a really simple way.
 It also provides built-in support for creating pool of threads to distribute the
 task load across multiple workers transparently using a simple best availability schedule algorithm
 
-It use [Web Workers](http://en.wikipedia.org/wiki/Web_worker) to create real threads,
+It uses [Web Workers](http://en.wikipedia.org/wiki/Web_worker) to create real threads,
 but provides fallback support for older browsers based on an `iframe` hack
 
 Welcome to the multi-thread world in JavaScript. You could start reading some [examples](#basic-usage)
