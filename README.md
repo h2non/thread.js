@@ -502,6 +502,11 @@ Run tests
 $ make test
 ```
 
+See the [examples](http://localhost:8080/examples)
+```bash
+$ ./node_modules/.bin/http-server
+```
+
 ## License
 
 [MIT](http://opensource.org/licenses/MIT) © Tomas Aparicio

@@ -8,6 +8,7 @@
   "devDependencies": {
     "browserify": "^5.9.1",
     "chai": "^1.9.1",
+    "http-server": "^0.6.1",
     "mocha": "^1.21.3",
     "mocha-phantomjs": "^3.4.1",
     "phantomjs": "^1.9.7-9",
@@ -18,11 +19,16 @@
     "harness": "mocha-bdd",
     "files": "test/*.js",
     "browsers": [
-      "chrome/5", "chrome/latest",
+      "chrome/5",
+      "chrome/latest",
       "ie/8..latest",
-      "firefox/3.5", "firefox/10", "firefox/latest",
-      "safari/5", "safari/latest",
-      "opera/11", "opera/next",
+      "firefox/3.5",
+      "firefox/10",
+      "firefox/latest",
+      "safari/5",
+      "safari/latest",
+      "opera/11",
+      "opera/next",
       "iphone/6",
       "ipad/6",
       "android-browser/latest"
