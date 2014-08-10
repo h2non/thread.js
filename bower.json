@@ -32,7 +32,8 @@
     ".gitignore",
     ".travis.yml",
     ".npmignore",
-    "package.json"
+    "package.json",
+    "examples"
   ],
   "devDependencies": {
     "hu": "~0.1.1"
