@@ -89,7 +89,7 @@ var task = worker.run(function (done) {
 })
 ```
 
-Consuming the computed task result
+Consuming the computed result
 ```js
 task.then(function (array) {
   console.log(array) // -> [3, 1, 2]
