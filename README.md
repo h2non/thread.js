@@ -154,35 +154,38 @@ thread().run(function (num, done) {
 })
 ```
 
-#### thread.pool(num)
+#### thread.pool(number)
 Return: `thread`
 
-Create a pool of threads and run tasks accross them
+Create a pool of a maximum number of threads and run tasks across them
 
-It implements a simple best availability orchestration algorithm to distribute tasks across multiple threads.
+It implements a simple best availability scheudle algorithm to transparently
+distribute tasks across multiple workers.
 It will only create a new thread if it's required and there is not any other thread available
 
-This feature is still beta and general improvements will be done in a future
+This feature is still beta and major improvements will be done in future releases.
+Any feedback will be really appreciated
 
 ```js
 // create a pool with a maximum of 10 threads
 var pool = thread({ env: { x: 2 } }).pool(10)
 var count = 1
+var tasks = 50
 
 function runAsyncTask(num) {
   setTimeout(function () {
     pool.run(function (done) {
-      return setTimeout(function () {
+      setTimeout(function () {
         done(null, env.x * 2)
       }, Math.random() * 1000)
     }).then(function (result) {
       console.log('Task:', num, '- Result:', result, '- Used threads:', pool.threadPool.length)
-      if (count++ === 50) console.log('Tasks finished')
+      if (count++ === tasks) console.log('Tasks finished')
     })
-  }, Math.random() * 5000)
+  }, Math.random() * 1000)
 }
 
-for (var i = 0; i < 50; i += 1) {
+for (var i = 0; i < tasks; i += 1) {
   runAsyncTask(i)
 }
 ```
@@ -206,7 +209,7 @@ thread().require([
 ])
 ```
 
-Binding custom objects and primitives types
+Binding custom objects and primitives types (alias to `bind()`)
 ```js
 thread().require({
   list: [1,2,3,4,5],
