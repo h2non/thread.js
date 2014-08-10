@@ -226,7 +226,7 @@ function worker() {
       }
 
       namespace = e.namespace || namespace
-      self[namespace] = e.env || {}
+      self[namespace] = mapFields(e.env || {})
     }
 
     function flush() {
