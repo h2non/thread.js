@@ -163,7 +163,6 @@ function pool(num, thread) {
 
     function nextThread(count) {
       var task, thread = findBestAvailableThread(count)
-
       if (thread) {
         task = runTask(thread)
       } else {
@@ -354,10 +353,8 @@ function initInterval(maxDelay, self) {
 
 function onMessage(self) {
   return function handler(ev) {
-    var dispatch
     var data = ev.data
     var type = data.type
-    var list = self.listeners
 
     if (data && data.id === self.id) {
       if (type === 'run:error' || type === 'run:success') {

@@ -70,6 +70,47 @@
         console.log(result)
       })
 
+      // pool
+      var task4, results = []
+      var job4 = thread({ env: { x: 2 } }).pool(4)
+      var tasks = 30
+
+      function run(id) {
+        return function () {
+          console.log('Running task:', id)
+          job4.run(function (num, done) {
+            return setTimeout(function () {
+              done(null, Math.round(env.x * num * Math.random() * 100))
+            }, Math.random() * 1000)
+          }, [ 2 ]).then(function (value) {
+            console.log('Then:', value)
+          }).finally(function (value) {
+            console.log('Finally:', value)
+            results.push(value)
+          })
+        }
+      }
+
+      function runTasks() {
+        var i = 0
+        while (i < tasks) {
+          setTimeout(run(i), Math.random() * 1000)
+          i += 1
+        }
+      }
+
+      runTasks()
+
+      var intervalId = setInterval(function () {
+        if (results.length === tasks) {
+          console.log('Finally:', results, results.length)
+          console.log('Used threads:', job4.threadPool.length)
+          console.log('-------------------------')
+          results = []
+          clearInterval(intervalId)
+        }
+      }, 250)
+
     </script>
   </body>
 </html>

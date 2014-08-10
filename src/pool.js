@@ -40,7 +40,6 @@ function pool(num, thread) {
 
     function nextThread(count) {
       var task, thread = findBestAvailableThread(count)
-
       if (thread) {
         task = runTask(thread)
       } else {
