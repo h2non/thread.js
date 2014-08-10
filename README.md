@@ -105,6 +105,17 @@ task.then(function (array) {
 - [Functions available to workers as global scope](https://developer.mozilla.org/en-US/docs/Web/API/Worker/Functions_and_classes_available_to_workers)
 - [Origin policy restrictions](http://www.html5rocks.com/en/tutorials/security/content-security-policy/)
 
+## Threads limitations
+
+You should be aware of some limitations in threads
+
+All values passed to must be JSON-serializable, meaning only primitives, built-in objects and functions.
+Same with return values from threads. No DOM nodes, custom objects or prototypes
+
+Any passed value to the thread isolated scope will be cloned (in other workds, will be passed by value, not by reference)
+
+Additionally, thread do not have access to the DOM
+
 ## API
 
 ### thread([options])
