@@ -109,12 +109,15 @@ task.then(function (array) {
 
 You should be aware of some limitations in threads
 
+Threads has it's own isolated scope. That means you must explicitly bind values or functions
+to the thread in order to consum them
+
+Any passed value to the thread isolated scope will be cloned (it will be passed by value, not by reference)
+
 All values passed to must be JSON-serializable, meaning only primitives, built-in objects and functions.
 Same with return values from threads. No DOM nodes, custom objects or prototypes
 
-Any passed value to the thread isolated scope will be cloned (in other workds, will be passed by value, not by reference)
-
-Additionally, thread do not have access to the DOM
+Additionally, threads do not have access to the DOM
 
 ## API
 
