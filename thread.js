@@ -210,7 +210,7 @@ function Task(thread, env) {
   this._subscribe()
 }
 
-Task.intervalCheckTime = 250
+Task.intervalCheckTime = 500
 
 Task.prototype._buildError = function (data) {
   var err = new Error(data.error)
