@@ -1,0 +1,26 @@
+<html>
+  <head>
+    <meta charset="utf-8">
+  </head>
+  <body>
+    <script src="../thread.js"></script>
+    <script>
+      var worker = thread({
+        env: { numbers: [1, 2, 3] },
+        require: [
+          'http://cdnjs.cloudflare.com/ajax/libs/lodash.js/2.4.1/lodash.js',
+          'http://cdn.rawgit.com/h2non/fw/0.1.2/fw.js'
+          //'scripts/utils.js'
+        ]
+      })
+
+      worker.run(function (num) {
+        return _.sortBy(env.numbers.concat([ num ]), function (num) {
+          return Math.sin(num)
+        })
+      }, [ 5 ]).then(function (result) {
+        console.log(result)
+      })
+    </script>
+  </body>
+</html>
