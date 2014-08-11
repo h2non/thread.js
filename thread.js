@@ -384,13 +384,14 @@ module.exports = Thread
 
 function Thread(options) {
   this._terminated = false
-  this.maxTaskDelay = 5 * 1000
   this.id = _.generateUUID()
   this._tasks = []
   this.options = {}
   this._setOptions(options)
   this._create()
 }
+
+Thread.prototype.maxTaskDelay = 10 * 1000
 
 Thread.prototype._setOptions = function (options) {
   this.options.namespace = 'env'
