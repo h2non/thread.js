@@ -296,11 +296,11 @@ describe('thread', function () {
   describe('task compute time exceeded error', function () {
     var task = null
     var job = thread()
-    job.maxTaskDelay = 500
+    job.maxTaskDelay = 800
 
     it('should run a task', function () {
       task = job.run(function (done) {
-        setTimeout(done, 1000)
+        setTimeout(done, 1500)
       })
     })
 
