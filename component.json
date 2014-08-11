@@ -21,8 +21,5 @@
     "multiprocess",
     "child",
     "multicore"
-  ],
-  "dependencies": {
-    "h2non/thread.js": "*"
-  }
+  ]
 }
