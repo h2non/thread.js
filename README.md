@@ -122,10 +122,12 @@ Additionally, threads do not have access to the DOM
 
 ## Modules
 
-A list of tiny and useful modules designed to be used with `thread.js`
+A list of tiny and useful modules you could `require` in `thread.js`
 
-- [HTTP](https://github.com/h2non/thread-http) - Tiny, full featured HTTP client
-- URI - URI/URL/URN tiny parser (coming soon)
+- [HTTP](https://github.com/lil-js/http) - Tiny, full featured HTTP client
+- [URI](https://github.com/lil-js/uri) - URI/URL/URN parser and generator
+- [Type](https://github.com/lil-js/type) - Reliable type checking
+- [UserAgent](https://github.com/lil-js/user-agent) - User agent parser
 
 ## API
 
