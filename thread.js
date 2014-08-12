@@ -212,15 +212,8 @@ function Task(thread, env) {
 
 Task.intervalCheckTime = 500
 
-Task.prototype._buildError = function (data) {
-  var err = new Error(data.error)
-  err.name = data.errorName
-  err.stack = data.errorStack
-  return err
-}
-
 Task.prototype._getValue = function (data) {
-  return data.type === 'run:error' ? this._buildError(data) : data.value
+  return data.type === 'run:error' ? createError(data) : data.value
 }
 
 Task.prototype._trigger = function (value, type) {
@@ -333,6 +326,13 @@ Task.prototype.flushed = function () {
 
 Task.create = function (thread) {
   return new Task(thread)
+}
+
+function createError(data) {
+  var err = new Error(data.error)
+  err.name = data.errorName
+  err.stack = data.errorStack
+  return err
 }
 
 function initInterval(maxDelay, self) {
