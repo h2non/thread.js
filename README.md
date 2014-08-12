@@ -27,11 +27,11 @@ It's not recommended to use it in production environments
 
 Via [Bower](http://bower.io)
 ```bash
-$ bower install thread
+bower install thread
 ```
 Via [Component](http://component.io/)
 ```bash
-$ component install h2non/thread.js
+component install h2non/thread.js
 ```
 
 Or loading the script remotely (just for testing or development)
