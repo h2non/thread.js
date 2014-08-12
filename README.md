@@ -21,22 +21,22 @@ but provides fallback support for older browsers based on an `iframe` hack
 Welcome to the multi-thread world in JavaScript. You could start seeing some [examples](https://github.com/h2non/thread.js/tree/master/examples)
 
 **Note**: the library is still in beta stage. A deep cross-browser testing is pending.
-Do not use it in production environments
+It's not recommended to use it in production environments
 
 ## Installation
 
-Via Bower package manager
+Via [Bower](http://bower.io)
 ```bash
 $ bower install thread
 ```
-
+Via [Component](http://component.io/)
 ```bash
 $ component install h2non/thread.js
 ```
 
 Or loading the script remotely (just for testing or development)
 ```html
-<script src="//cdn.rawgit.com/h2non/thread.js/0.1.0-rc.4/thread.js"></script>
+<script src="//cdn.rawgit.com/h2non/thread.js/0.1.0/thread.js"></script>
 ```
 
 ### Environments
@@ -120,6 +120,7 @@ Same with return values from threads. No DOM nodes, custom objects or prototypes
 
 Additionally, threads do not have access to the DOM
 
+<!--
 ## Modules
 
 A list of tiny and useful modules you could `require` in `thread.js`
@@ -128,6 +129,7 @@ A list of tiny and useful modules you could `require` in `thread.js`
 - [URI](https://github.com/lil-js/uri) - URI/URL/URN parser and generator
 - [Type](https://github.com/lil-js/type) - Reliable type checking
 - [UserAgent](https://github.com/lil-js/ua) - User agent parser
+-->
 
 ## API
 
@@ -155,12 +157,22 @@ thread({
 })
 ```
 
-#### thread.run(fn, env, args)
+#### Thread#run(fn, env, args)
 Return: `task` Alias: `exec`
 
-Run a function in the thread context, optionally binding a custom context or passing function arguments
+Run the given function in the thread scope context.
+You can optionally bind a custom context (exposed via `this` keyword) or passing function arguments (as `array` notation)
 
-Binding a custom context
+Run a function and return the result synchronously
+```js
+thread().run(function () {
+  return 2 * 2
+}).then(function (result) {
+  console.log(result) // -> 4
+})
+```
+
+Binding a custom context and return the result asynchronously
 ```js
 thread().run(function (done) {
   done(null, this.x * 2)
@@ -169,7 +181,7 @@ thread().run(function (done) {
 })
 ```
 
-Passing arguments
+Passing arguments and return the result asynchronously
 ```js
 thread().run(function (num, done) {
   done(null, num * this.x)
@@ -178,7 +190,7 @@ thread().run(function (num, done) {
 })
 ```
 
-#### thread.pool(number)
+#### Thread#pool(number)
 Return: `thread`
 
 Create a pool of a maximum number of threads and run tasks across them
@@ -214,7 +226,7 @@ for (var i = 0; i < tasks; i += 1) {
 }
 ```
 
-#### thread.require(sources)
+#### Thread#require(sources)
 Return: `thread`
 
 Add remote scripts, bind an object or functions to the thread isolated scope.
@@ -257,7 +269,7 @@ thread().require({
 })
 ```
 
-#### thread.bind(obj)
+#### Thread#bind(obj)
 Return: `thread`
 
 Bind a map of values to the isolated thread scope.
@@ -281,7 +293,7 @@ task.run(function (done) {
 })
 ```
 
-#### thread.flush()
+#### Thread#flush()
 Return: `thread`
 
 Flush the thread cached data and scope environment.
@@ -292,7 +304,7 @@ var worker = thread().bind({ x: 2 })
 worker.env
 ```
 
-#### thread.flushTasks()
+#### Thread#flushTasks()
 Return: `thread`
 
 Flush running tasks promises and clean cached values
@@ -304,7 +316,7 @@ worker.flushTasks()
 console.log(worker.pending()) // -> 0
 ```
 
-#### thread.send(msg)
+#### Thread#send(msg)
 Return: `thread`
 
 Send a message directly to the current thread.
@@ -320,7 +332,7 @@ worker.send({ type: 'msg', data: 'hello world' })
 
 ```
 
-#### thread.kill()
+#### Thread#kill()
 Return: `thread` Alias: `terminate`
 
 Kill the current thread. All the cached data, scope environment and config options will be flushed,
@@ -335,7 +347,7 @@ worker.run(longTask).then(function () {
 })
 ```
 
-#### thread.start([options])
+#### Thread#start([options])
 Return: `thread`
 
 Start (or restart) the current thread.
@@ -348,7 +360,7 @@ worker.kill() // explicit kill
 worker.start(options) // explicit re-start, passing the same options
 ```
 
-#### thread.pending()
+#### Thread#pending()
 Return: `number`
 
 Return the pending running tasks on the current thread
@@ -362,7 +374,7 @@ task.then(function () {
 })
 ```
 
-#### thread.running()
+#### Thread#running()
 Return: `boolean`
 
 Return `true` if the current thread has running tasks
@@ -372,7 +384,7 @@ thread().run(longAsyncTask).running() // -> true
 thread().run(tinySyncTask).running() // -> false
 ```
 
-#### thread.terminated()
+#### Thread#terminated()
 Return: `boolean`
 
 Return `true` if the current thread is under terminated status
@@ -382,7 +394,7 @@ thread().terminated() // -> false
 thread().kill().terminated() // -> true
 ```
 
-#### thread.on(type, handler)
+#### Thread#on(type, handler)
 Return: `thread` Alias: `addEventListener`
 
 Add a custom worker event handler. By default you don't need to handle
@@ -390,7 +402,7 @@ events directly, use it only for exceptional specific purposes
 
 Supported event types are `error` and `message`
 
-#### thread.off(type, handler)
+#### Thread#off(type, handler)
 Return: `thread` Alias: `removeEventListener`
 
 Remove a worker event listener.
@@ -413,13 +425,13 @@ task.run(function () {
 })
 ```
 
-#### task.maxtaskDelay
+#### Task.maxtaskDelay
 Value: `number` Default: `5000`
 
 The maximum amount of time that a task can take in miliseconds.
 If the task computation exceed this, it will be exit as error
 
-#### task.then(successFn [, errorFn])
+#### Task#then(successFn [, errorFn])
 Return: `task`
 
 Add success and error (optionally) result handlers for the current task
@@ -432,7 +444,7 @@ task.run(longAsyncTask).then(function (result) {
 })
 ```
 
-#### task.catch(errorFn)
+#### Task#catch(errorFn)
 Return: `task`
 
 Add an error handlers for the current task
@@ -445,7 +457,7 @@ task.run(longAsyncTask).catch(function (err) {
 })
 ```
 
-#### task.finally(finalFn)
+#### Task#finally(finalFn)
 Return: `task`
 
 Add a final handler for the current task.
@@ -459,7 +471,7 @@ task.run(longAsyncTask).finally(function (result) {
 })
 ```
 
-#### task.bind(obj)
+#### Task#bind(obj)
 Return: `task`
 
 Bind custom map environment to the current task scope
@@ -475,7 +487,7 @@ task.run(function () {
 })
 ```
 
-#### task.flush()
+#### Task#flush()
 Return: `task`
 
 Flush cached result data and set the initial task state
@@ -487,7 +499,7 @@ task.flush()
 task.flushed() // -> true
 ```
 
-#### task.flushed()
+#### Task#flushed()
 Return: `boolean`
 
 Return `true` if task data was already flushed
