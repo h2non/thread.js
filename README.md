@@ -126,7 +126,6 @@ A list of tiny and useful modules designed to be used with `thread.js`
 
 - [HTTP](https://github.com/h2non/thread-http) - Tiny, full featured HTTP client
 - URI - URI/URL/URN tiny parser (coming soon)
-- Location - Location-like object for Workers (coming soon)
 
 ## API
 
