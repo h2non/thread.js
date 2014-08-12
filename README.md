@@ -302,8 +302,8 @@ Flush the thread cached data and scope environment.
 If you flush the data, you will need
 
 ```js
-var worker = thread().bind({ x: 2 })
-console.log(Object.keys(worker.env).length) // -> 0
+var worker = thread({ env: { x: 2 } }).flush()
+console.log(Object.keys(worker.options.env).length) // -> 0
 ```
 
 #### Thread#flushTasks()
