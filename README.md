@@ -216,7 +216,10 @@ function runAsyncTask(num) {
       }, Math.random() * 1000)
     }).then(function (result) {
       console.log('Task:', num, '- Result:', result, '- Used threads:', pool.threadPool.length)
-      if (count++ === tasks) console.log('Tasks finished')
+      if (count++ === tasks) {
+        console.log('Tasks finished')
+        pool.kill() // kill all pool threads
+      }
     })
   }, Math.random() * 1000)
 }
