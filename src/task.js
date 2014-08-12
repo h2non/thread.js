@@ -30,10 +30,7 @@ Task.prototype._getValue = function (data) {
 }
 
 Task.prototype._trigger = function (value, type) {
-  if (typeof this._timer === 'number') {
-    clearInterval(self._timer)
-    self._timer = null
-  }
+  if (typeof this._timer === 'number') { clearTimer(this) }
   dispatcher(this, value)(this.listeners[type])
 }
 
@@ -146,20 +143,24 @@ Task.create = function (thread) {
 
 function initInterval(maxDelay, self) {
   var error, now = _.now()
-  var timer = self._timer = setInterval(function () {
+  self._timer = setInterval(function () {
     if (self.memoized) {
-      clearInterval(timer)
+      clearTimer(self)
     } else {
       if ((_.now() - now) > maxDelay) {
         error = new Error('maximum task execution time exceeded')
         self.memoized = { type: 'run:error', error: error }
         self._trigger(error, 'error')
         self._trigger(error, 'end')
-        clearInterval(timer)
-        self._timer = null
+        clearTimer(self)
       }
     }
   }, Task.intervalCheckTime)
+}
+
+function clearTimer(self) {
+  clearInterval(self._timer)
+  self._timer = null
 }
 
 function onMessage(self) {
