@@ -226,11 +226,37 @@ for (var i = 0; i < tasks; i += 1) {
 }
 ```
 
+#### Thread#bind(obj)
+Return: `thread`
+
+Bind a map of values to the isolated thread scope.
+You can do the same passing an object via `Thread#require()`
+
+Passed values will be exposed in the global namespace (default to `env`)
+
+```js
+var task = thread().bind({
+  num: 4,
+  list: [3,2,1],
+  defer: function (fn) {
+    setTimeout(fn, 1)
+  }
+})
+
+task.run(function (done) {
+  env.defer(function () {
+    done(null, env.list.reverse().push(env.num))
+  })
+}).then(function (result) {
+  console.log(result) // -> [1,2,3,4]
+})
+```
+
 #### Thread#require(sources)
 Return: `thread`
 
 Add remote scripts, bind an object or functions to the thread isolated scope.
-It will be exposed in the global namespace (default `env`)
+Passed values will be exposed in the global namespace (default to `env`)
 
 Load remote script
 ```js
@@ -266,30 +292,6 @@ thread().require({
       return num > 1 && num < 100
     })
   }
-})
-```
-
-#### Thread#bind(obj)
-Return: `thread`
-
-Bind a map of values to the isolated thread scope.
-You can do the same passing an object to `require()`
-
-```js
-var task = thread().bind({
-  num: 4,
-  list: [3,2,1],
-  defer: function (fn) {
-    setTimeout(fn, 1)
-  }
-})
-
-task.run(function (done) {
-  env.defer(function () {
-    done(null, env.list.reverse().push(env.num))
-  })
-}).then(function (result) {
-  console.log(result) // -> [1,2,3,4]
 })
 ```
 
