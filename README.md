@@ -324,12 +324,11 @@ Useful for specific use cases, but it's preferably do not use it directly.
 Use the `run()` abstraction instead
 
 Be aware about passing non-serialize data types such as native JavaScript objects,
-DOM nodes, objects with self-references...
+DOM nodes, objects with self-references... (see threads [limitations](https://github.com/h2non/thread.js#threads-limitations))
 
 ```js
 var worker = thread()
 worker.send({ type: 'msg', data: 'hello world' })
-
 ```
 
 #### Thread#kill()
