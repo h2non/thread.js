@@ -407,6 +407,24 @@ Return: `thread` Alias: `removeEventListener`
 Remove a worker event listener.
 It's required to pass the original handler function in order to remove it
 
+#### Thread#maxTaskDelay
+Type: `number` Default: `10000`
+
+The maximum amount of time that a task can take in miliseconds.
+If the task computation time exceed, it will be exit as error
+
+This value will be applied to every task created by the current thread
+
+```js
+var worker = thread()
+worker.maxTaskDelay = 1000
+worker.run(function (done) {
+  setTimeout(done, 2000)
+}).catch(function (err) {
+  console.log(err.message) // -> task execution time exceeded
+})
+```
+
 ### thread.Task(thread, env)
 Return: `task`
 
@@ -423,12 +441,6 @@ task.run(function () {
   console.log(result) // -> 4
 })
 ```
-
-#### Task.maxtaskDelay
-Value: `number` Default: `5000`
-
-The maximum amount of time that a task can take in miliseconds.
-If the task computation exceed this, it will be exit as error
 
 #### Task#then(successFn [, errorFn])
 Return: `task`
