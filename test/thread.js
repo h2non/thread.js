@@ -306,7 +306,7 @@ describe('thread', function () {
 
     it('should have a valid result', function (done) {
       task.catch(function (err) {
-        expect(err.message).to.be.equal('maximum task execution exceeded')
+        expect(err.message).to.be.equal('maximum task execution time exceeded')
         done()
       })
     })
