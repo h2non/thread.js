@@ -301,7 +301,7 @@ If you flush the data, you will need
 
 ```js
 var worker = thread().bind({ x: 2 })
-worker.env
+console.log(Object.keys(worker.env).length) // -> 0
 ```
 
 #### Thread#flushTasks()
