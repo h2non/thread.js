@@ -154,7 +154,7 @@ thread({
 })
 ```
 
-#### Thread#run(fn, env, args)
+#### thread#run(fn, env, args)
 Return: `task` Alias: `exec`
 
 Run the given function in the thread scope context.
@@ -187,7 +187,7 @@ thread().run(function (num, done) {
 })
 ```
 
-#### Thread#pool(number)
+#### thread#pool(number)
 Return: `thread`
 
 Create a pool of a maximum number of threads and run tasks across them
@@ -226,11 +226,11 @@ for (var i = 0; i < tasks; i += 1) {
 }
 ```
 
-#### Thread#bind(obj)
+#### thread#bind(obj)
 Return: `thread`
 
 Bind a map of values to the isolated thread scope.
-You can do the same passing an object via `Thread#require()`
+You can do the same passing an object via `thread#require()`
 
 Passed values will be exposed in the global namespace (default to `env`)
 
@@ -252,7 +252,7 @@ task.run(function (done) {
 })
 ```
 
-#### Thread#require(sources)
+#### thread#require(sources)
 Return: `thread` Alias: `import`
 
 Load remote scripts from a valid URL, bind an object or functions to the thread isolated scope.
@@ -297,7 +297,7 @@ thread().require({
 
 Bind values will be available in the global namespace object
 
-#### Thread#flush()
+#### thread#flush()
 Return: `thread`
 
 Flush the thread cached data and scope environment.
@@ -308,7 +308,7 @@ var worker = thread({ env: { x: 2 } }).flush()
 console.log(Object.keys(worker.options.env).length) // -> 0
 ```
 
-#### Thread#flushTasks()
+#### thread#flushTasks()
 Return: `thread`
 
 Flush running tasks promises and clean cached values
@@ -320,7 +320,7 @@ worker.flushTasks()
 console.log(worker.pending()) // -> 0
 ```
 
-#### Thread#send(msg)
+#### thread#send(msg)
 Return: `thread`
 
 Send a message directly to the current thread.
@@ -335,7 +335,7 @@ var worker = thread()
 worker.send({ type: 'msg', data: 'hello world' })
 ```
 
-#### Thread#kill()
+#### thread#kill()
 Return: `thread` Alias: `terminate`
 
 Kill the current thread. All the cached data, scope environment and config options will be flushed,
@@ -350,7 +350,7 @@ worker.run(longTask).then(function () {
 })
 ```
 
-#### Thread#start([options])
+#### thread#start([options])
 Return: `thread`
 
 Start (or restart) the current thread.
@@ -363,7 +363,7 @@ worker.kill() // explicit kill
 worker.start(options) // explicit re-start, passing the same options
 ```
 
-#### Thread#pending()
+#### thread#pending()
 Return: `number`
 
 Return the pending running tasks on the current thread
@@ -377,7 +377,7 @@ task.then(function () {
 })
 ```
 
-#### Thread#running()
+#### thread#running()
 Return: `boolean`
 
 Return `true` if the current thread has running tasks
@@ -387,7 +387,7 @@ thread().run(longAsyncTask).running() // -> true
 thread().run(tinySyncTask).running() // -> false
 ```
 
-#### Thread#idle()
+#### thread#idle()
 Return: `boolean` Alias: `sleeping`
 
 Return `true` if the current thread is in idle state.
@@ -405,7 +405,7 @@ setTimeout(function () {
 }, 2000)
 ```
 
-#### Thread#terminated()
+#### thread#terminated()
 Return: `boolean`
 
 Return `true` if the current thread is under terminated status
@@ -415,7 +415,7 @@ thread().terminated() // -> false
 thread().kill().terminated() // -> true
 ```
 
-#### Thread#on(type, handler)
+#### thread#on(type, handler)
 Return: `thread` Alias: `addEventListener`
 
 Add a custom worker event handler. By default you don't need to handle
@@ -423,13 +423,13 @@ events directly, use it only for exceptional specific purposes
 
 Supported event types are `error` and `message`
 
-#### Thread#off(type, handler)
+#### thread#off(type, handler)
 Return: `thread` Alias: `removeEventListener`
 
 Remove a worker event listener.
 It's required to pass the original handler function in order to remove it
 
-#### Thread#maxTaskDelay
+#### thread#maxTaskDelay
 Type: `number` Default: `0`
 
 The maximum amount of time that a task can take in miliseconds.
@@ -449,12 +449,12 @@ worker.run(function (done) {
 })
 ```
 
-#### Thread#idleTime
+#### thread#idleTime
 Type: `number` Default: `30000`
 
 The minimum time in milliseconds that a thread is considered in sleeping (idle) state
 
-#### Thread#isPool
+#### thread#isPool
 Type: `boolean`
 
 Check if the current `thread` instance is a pool of threads
