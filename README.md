@@ -20,9 +20,6 @@ but provides fallback support for older browsers based on an `iframe` hack
 
 Welcome to the multithreading world in the browser
 
-**Note**: the library is still in beta stage. A deep cross-browser testing is pending.
-It's not recommended to use it in production environments
-
 ## Installation
 
 Via [Bower](http://bower.io)
@@ -36,7 +33,7 @@ component install h2non/thread.js
 
 Or loading the script remotely (just for testing or development)
 ```html
-<script src="//cdn.rawgit.com/h2non/thread.js/0.1.0/thread.js"></script>
+<script src="//cdn.rawgit.com/h2non/thread.js/0.1.1/thread.js"></script>
 ```
 
 ### Environments
