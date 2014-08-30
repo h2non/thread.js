@@ -16,7 +16,7 @@ function Task(thread, env) {
   this._subscribe()
 }
 
-Task.intervalCheckTime = 500
+Task.intervalCheckTime = 200
 
 Task.prototype._getValue = function (data) {
   return data.type === 'run:error' ? createError(data) : data.value
@@ -49,8 +49,8 @@ Task.prototype.bind = function (env) {
   return this
 }
 
-Task.prototype.run = function (fn, env, args) {
-  var maxDelay, tasks
+Task.prototype.run = Task.prototype.exec = function (fn, env, args) {
+  var maxDelay, thread = this.thread
   this.time = _.now()
 
   if (!_.isFn(fn)) throw new TypeError('first argument must be a function')
@@ -59,18 +59,15 @@ Task.prototype.run = function (fn, env, args) {
   env = _.serializeMap(_.extend({}, this.env, env))
   this.memoized = null
 
-  maxDelay = this.thread.maxTaskDelay
-  if (maxDelay > Task.intervalCheckTime) {
+  maxDelay = thread.maxTaskDelay
+  if (maxDelay >= Task.intervalCheckTime) {
     initInterval(maxDelay, this)
   }
 
-  tasks = this.thread._tasks
-  if (tasks.indexOf(this) === -1) {
-    tasks.push(this)
-    this.finally(function () {
-      tasks.splice(tasks.indexOf(this), 1)
-    })
+  if (thread._tasks.indexOf(this) === -1) {
+    thread._tasks.push(this)
   }
+  this.finally(cleanTask(thread, this))
 
   this.worker.postMessage({
     id: this.id,
@@ -81,6 +78,14 @@ Task.prototype.run = function (fn, env, args) {
   })
 
   return this
+}
+
+function cleanTask(thread, task) {
+  return function () {
+    var index = thread._tasks.indexOf(task)
+    thread._latestTask = _.now()
+    if (index >= 0) thread._tasks.splice(index, 1)
+  }
 }
 
 Task.prototype.then = function (fn, errorFn) {
@@ -122,8 +127,8 @@ Task.prototype.finally = function (fn) {
 }
 
 Task.prototype.flush = function () {
-  this.memoized = this.thread =
-    this.worker = this.env = this.listeners = null
+  this.memoized = this.thread = null
+  this.worker = this.env = this.listeners = null
 }
 
 Task.prototype.flushed = function () {

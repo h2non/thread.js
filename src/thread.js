@@ -3,6 +3,7 @@ var workerSrc = require('./worker')
 var Task = require('./task')
 var FakeWorker = require('./fake-worker')
 var pool = require('./pool')
+var store = require('./store')
 
 var URL = window.URL || window.webkitURL
 var hasWorkers = _.isFn(window.Worker)
@@ -13,13 +14,16 @@ module.exports = Thread
 function Thread(options) {
   this._terminated = false
   this.id = _.generateUUID()
-  this._tasks = []
   this.options = {}
+  this._tasks = []
+  this._latestTask = null
   this._setOptions(options)
   this._create()
 }
 
-Thread.prototype.maxTaskDelay = 10 * 1000
+Thread.prototype.isPool = false
+Thread.prototype.maxTaskDelay = 0
+Thread.prototype.idleTime = 30 * 1000
 
 Thread.prototype._setOptions = function (options) {
   this.options.namespace = 'env'
@@ -49,6 +53,8 @@ Thread.prototype._create = function () {
     this.worker = new FakeWorker(this.id)
   }
 
+  store.push(this)
+
   this.send(_.extend({ type: 'start' }, {
     env: _.serializeMap(this.options.env),
     namespace: this.options.namespace
@@ -59,7 +65,7 @@ Thread.prototype._create = function () {
   return this
 }
 
-Thread.prototype.require = function (name, fn) {
+Thread.prototype.require = Thread.prototype.import = function (name, fn) {
   if (_.isFn(name)) {
     fn = name
     name = _.fnName(fn)
@@ -69,9 +75,11 @@ Thread.prototype.require = function (name, fn) {
     if (_.isFn(fn)) {
       this.send({ type: 'require:fn', src: fn.toString(), name: name })
     } else {
+      if (_.isArr(this.options.require)) this.options.require.push(name)
       this.send({ type: 'require:file', src: name })
     }
   } else if (_.isArr(name)) {
+    if (_.isArr(this.options.require)) this.options.require = this.options.require.concat(name)
     this.send({ type: 'require:file', src: name })
   } else if (_.isObj(name)) {
     this.send({ type: 'require:map', src: _.serializeMap(name) })
@@ -99,10 +107,7 @@ Thread.prototype.run = Thread.prototype.exec = function (fn, env, args) {
     task = new Task(this)
   }
 
-  tasks.push(task)
-  task.finally(function () {
-    tasks.splice(tasks.indexOf(task), 1)
-  })
+  this._tasks.push(task)
   _.defer(function () { task.run(fn, env, args) })
 
   return task
@@ -145,6 +150,7 @@ Thread.prototype.terminate = Thread.prototype.kill = function () {
     this.flushTasks().flush()
     this._terminated = true
     this.worker.terminate()
+    store.remove(this)
   }
   return this
 }
@@ -167,7 +173,11 @@ Thread.prototype.running = function () {
 }
 
 Thread.prototype.terminated = function () {
-  return !this.worker
+  return this._terminated
+}
+
+Thread.prototype.idle = Thread.prototype.sleep = function () {
+  return !this.running() && !this.terminated() && (_.now() - this._latestTask) > this.idleTime
 }
 
 Thread.prototype.on = Thread.prototype.addEventListener = function (type, fn) {

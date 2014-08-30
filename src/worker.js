@@ -218,13 +218,8 @@ function worker() {
     }
 
     function start(e) {
-      if (e.require) {
-        require(e.require)
-      }
-      if (e.origin) {
-        origin = e.origin
-      }
-
+      if (e.require) { require(e.require) }
+      if (e.origin) { origin = e.origin }
       namespace = e.namespace || namespace
       self[namespace] = mapFields(e.env || {})
     }

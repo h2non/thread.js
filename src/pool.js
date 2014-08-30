@@ -8,12 +8,17 @@ function pool(num, thread) {
   var options = thread.options
   var terminate = thread.terminate
 
-  function findBestAvailableThread(pending) {
-    var i, l, thread
+  function findBestAvailableThread(offset) {
+    var i, l, thread, pending
     for (i = 0, l = threads.length; i < l; i += 1) {
       thread = threads[i]
-      if (thread.pending() <= pending) {
-        return thread
+      pending = thread.pending()
+      if (pending === 0 || pending < offset) {
+        if (thread.terminated()) {
+          threads.splice(i, 1)
+        } else {
+          return thread
+        }
       }
     }
   }
@@ -24,27 +29,27 @@ function pool(num, thread) {
     return thread
   }
 
+  function runTask(thread, args) {
+    var task
+    if (thread === threads[0]) {
+      task = threadRun.apply(thread, args)
+    } else {
+      task = thread.run.apply(thread, args)
+    }
+    return task
+  }
+
   thread.run = function () {
     var args = arguments
     var count = 0
 
-    function runTask(thread) {
-      var task
-      if (thread === threads[0]) {
-        task = threadRun.apply(thread, args)
-      } else {
-        task = thread.run.apply(thread, args)
-      }
-      return task
-    }
-
     function nextThread(count) {
       var task, thread = findBestAvailableThread(count)
       if (thread) {
-        task = runTask(thread)
+        task = runTask(thread, args)
       } else {
         if (threads.length < num) {
-          task = runTask(newThread())
+          task = runTask(newThread(), args)
         } else {
           task = nextThread(count + 1)
         }
@@ -57,13 +62,14 @@ function pool(num, thread) {
 
   thread.terminate = thread.kill = function () {
     _.each(threads, function (thread, i) {
-      if (i === 0) terminate()
+      if (i === 0) terminate.call(thread)
       else thread.terminate()
     })
     threads.splice(0)
   }
 
   thread.threadPool = threads
+  thread.isPool = true
 
   return thread
 }

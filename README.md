@@ -18,7 +18,7 @@ task load across multiple workers transparently using a simple best availability
 It uses [Web Workers](http://en.wikipedia.org/wiki/Web_worker) to create real threads,
 but provides fallback support for older browsers based on an `iframe` hack
 
-Welcome to the multithread world in JavaScript
+Welcome to the multithreading world in the browser
 
 **Note**: the library is still in beta stage. A deep cross-browser testing is pending.
 It's not recommended to use it in production environments
@@ -256,12 +256,12 @@ task.run(function (done) {
 ```
 
 #### Thread#require(sources)
-Return: `thread`
+Return: `thread` Alias: `import`
 
-Add remote scripts, bind an object or functions to the thread isolated scope.
+Load remote scripts from a valid URL, bind an object or functions to the thread isolated scope.
 Passed values will be exposed in the global namespace (default to `env`)
 
-Load remote script
+Loading a remote script
 ```js
 thread().require('http://cdn.rawgit.com/h2non/hu/0.1.1/hu.js')
 ```
@@ -274,7 +274,7 @@ thread().require([
 ])
 ```
 
-Binding custom objects and primitives types (alias to `bind()`)
+Binding custom objects and primitives types (does the same as `bind()`)
 ```js
 thread().require({
   list: [1,2,3,4,5],
@@ -297,6 +297,8 @@ thread().require({
   }
 })
 ```
+
+Bind values will be available in the global namespace object
 
 #### Thread#flush()
 Return: `thread`
@@ -388,6 +390,24 @@ thread().run(longAsyncTask).running() // -> true
 thread().run(tinySyncTask).running() // -> false
 ```
 
+#### Thread#idle()
+Return: `boolean` Alias: `sleeping`
+
+Return `true` if the current thread is in idle state.
+
+A thread will be considered in idle state if its latest executed task exceeds from the [idleTime](#threadidletime).
+By default, the idle time will be 30 seconds
+
+```js
+var worker = thread()
+worker.idleTime = 1000 // set max 1 second
+var task = worker.run(someTask)
+setTimeout(function () {
+  // after idle time exceeds, the thread will be in idle state
+  worker.idle() // -> true
+}, 2000)
+```
+
 #### Thread#terminated()
 Return: `boolean`
 
@@ -413,12 +433,14 @@ Remove a worker event listener.
 It's required to pass the original handler function in order to remove it
 
 #### Thread#maxTaskDelay
-Type: `number` Default: `10000`
+Type: `number` Default: `0`
 
 The maximum amount of time that a task can take in miliseconds.
-If the task computation time exceed, it will be exit as error
+If the task computation time exceed, it will be exit as error.
 
-This value will be applied to every task created by the current thread
+By default this feature is disabled in order to avoid unnecessary computations
+
+This value will be applied to every task which runs in the current thread or a pool of threads
 
 ```js
 var worker = thread()
@@ -428,6 +450,21 @@ worker.run(function (done) {
 }).catch(function (err) {
   console.log(err.message) // -> task execution time exceeded
 })
+```
+
+#### Thread#idleTime
+Type: `number` Default: `30000`
+
+The minimum time in milliseconds that a thread is considered in sleeping (idle) state
+
+#### Thread#isPool
+Type: `boolean`
+
+Check if the current `thread` instance is a pool of threads
+
+```js
+var pool = thread().pool(2)
+pool.isPool() // -> true
 ```
 
 ### thread.Task(thread, env)
@@ -519,6 +556,26 @@ task.flushed() // -> true
 Return: `boolean`
 
 Return `true` if task data was already flushed
+
+#### thread.total()
+Return: `number`
+
+Return the total number of running threads
+
+#### thread.running()
+Return: `array`
+
+Return an `array` of the running threads (are processing one or more tasks)
+
+#### thread.idle()
+Return: `array`
+
+Return an `array` of the idle threads (thread which has no execute tasks for a long time)
+
+#### thread.killAll()
+Alias: `terminateAll`
+
+Kill all the existent threads
 
 ## Contributing
 

@@ -1,0 +1,11 @@
+{
+  "test_framework": "mocha",
+  "test_path": ["test/runner.html"],
+  "browsers":   [{
+    "browser": "firefox",
+    "browser_version": "15.0",
+    "device": null,
+    "os": "Windows",
+    "os_version": "7"
+  }]
+}

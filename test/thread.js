@@ -293,14 +293,35 @@ describe('thread', function () {
     })
   })
 
+  describe('idle time', function () {
+    var task = null
+    var job = thread()
+    job.idleTime = 100
+
+    it('should run a task', function () {
+      task = job.run(function () {
+        return 4 * 2
+      })
+    })
+
+    it('should have a idle state', function (done) {
+      task.then(function () {
+        setTimeout(function () {
+          expect(job.idle()).to.be.true
+          done()
+        }, 150)
+      })
+    })
+  })
+
   describe('task compute time exceeded error', function () {
     var task = null
     var job = thread()
-    job.maxTaskDelay = 800
+    job.maxTaskDelay = 300
 
     it('should run a task', function () {
       task = job.run(function (done) {
-        setTimeout(done, 1500)
+        setTimeout(done, 500)
       })
     })
 
@@ -321,7 +342,7 @@ describe('thread', function () {
         setTimeout(done, 200)
       })
       job.run(function (done) {
-        setTimeout(done, 250)
+        setTimeout(done, 300)
       })
     })
 
@@ -333,16 +354,20 @@ describe('thread', function () {
       expect(job.running()).to.be.true
     })
 
-    it('should not be running when tasks finished', function (done) {
+    it('should be running when are not yet finished', function (done) {
       setTimeout(function () {
         expect(job.pending()).to.be.equal(1)
         expect(job.running()).to.be.true
         done()
-      }, 300)
+      }, 250)
     })
 
     it('should kill the thread', function () {
       job.kill()
+    })
+
+    it('should be as terminated state', function () {
+      expect(job.terminated()).to.be.true
     })
   })
 

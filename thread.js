@@ -82,7 +82,7 @@ FakeWorker.prototype.removeEventListener = function (type, fn) {
       pool.splice(0, pool.length)
     } else {
       index = pool.indexOf(fn)
-      if (~index) {
+      if (index > 0) {
         pool.splice(index, 1)
       }
     }
@@ -106,7 +106,8 @@ function getLocation() {
     location.protocol + "//" + location.hostname + (location.port ? ':' + location.port : '')
 }
 
-},{"./utils":6,"./worker":7}],2:[function(require,module,exports){
+},{"./utils":7,"./worker":8}],2:[function(require,module,exports){
+var store = require('./store')
 var Thread = require('./thread')
 
 module.exports = ThreadFactory
@@ -115,12 +116,19 @@ function ThreadFactory(options) {
   return new Thread(options)
 }
 
-ThreadFactory.VERSION = '0.1.0'
+ThreadFactory.VERSION = '0.1.1'
 ThreadFactory.create = ThreadFactory
 ThreadFactory.Task = Thread.Task
 ThreadFactory.Thread = Thread
 
-},{"./thread":5}],3:[function(require,module,exports){
+ThreadFactory.total = store.total
+ThreadFactory.running = store.running
+ThreadFactory.idle = store.idle
+ThreadFactory.flush = store.flush
+ThreadFactory.killAll = ThreadFactory.terminateAll = store.killAll
+
+
+},{"./store":4,"./thread":6}],3:[function(require,module,exports){
 var _ = require('./utils')
 
 module.exports = pool
@@ -131,12 +139,17 @@ function pool(num, thread) {
   var options = thread.options
   var terminate = thread.terminate
 
-  function findBestAvailableThread(pending) {
-    var i, l, thread
+  function findBestAvailableThread(offset) {
+    var i, l, thread, pending
     for (i = 0, l = threads.length; i < l; i += 1) {
       thread = threads[i]
-      if (thread.pending() <= pending) {
-        return thread
+      pending = thread.pending()
+      if (pending === 0 || pending < offset) {
+        if (thread.terminated()) {
+          threads.splice(i, 1)
+        } else {
+          return thread
+        }
       }
     }
   }
@@ -147,27 +160,27 @@ function pool(num, thread) {
     return thread
   }
 
+  function runTask(thread, args) {
+    var task
+    if (thread === threads[0]) {
+      task = threadRun.apply(thread, args)
+    } else {
+      task = thread.run.apply(thread, args)
+    }
+    return task
+  }
+
   thread.run = function () {
     var args = arguments
     var count = 0
 
-    function runTask(thread) {
-      var task
-      if (thread === threads[0]) {
-        task = threadRun.apply(thread, args)
-      } else {
-        task = thread.run.apply(thread, args)
-      }
-      return task
-    }
-
     function nextThread(count) {
       var task, thread = findBestAvailableThread(count)
       if (thread) {
-        task = runTask(thread)
+        task = runTask(thread, args)
       } else {
         if (threads.length < num) {
-          task = runTask(newThread())
+          task = runTask(newThread(), args)
         } else {
           task = nextThread(count + 1)
         }
@@ -180,18 +193,65 @@ function pool(num, thread) {
 
   thread.terminate = thread.kill = function () {
     _.each(threads, function (thread, i) {
-      if (i === 0) terminate()
+      if (i === 0) terminate.call(thread)
       else thread.terminate()
     })
     threads.splice(0)
   }
 
   thread.threadPool = threads
+  thread.isPool = true
 
   return thread
 }
 
-},{"./utils":6}],4:[function(require,module,exports){
+},{"./utils":7}],4:[function(require,module,exports){
+var _ = require('./utils')
+
+var buf = []
+var store = module.exports = {}
+
+store.push = function (thread) {
+  buf.push(thread)
+}
+
+store.remove = function (thread) {
+  var index = buf.indexOf(thread)
+  if (index >= 0) buf.splice(index, 1)
+}
+
+store.flush = function () {
+  buf.splice(0)
+}
+
+store.total = function () {
+  return buf.length
+}
+
+store.running = function () {
+  var running = []
+  _.each(buf, function (thread) {
+    if (thread.running()) running.push(thread)
+  })
+  return running
+}
+
+store.idle = function () {
+  var idle = []
+  _.each(buf, function (thread) {
+    if (thread.idle()) idle.push(thread)
+  })
+  return idle
+}
+
+store.killAll = function () {
+  var arr = buf.slice()
+  _.each(arr, function (thread) {
+    thread.kill()
+  })
+}
+
+},{"./utils":7}],5:[function(require,module,exports){
 var _ = require('./utils')
 
 module.exports = Task
@@ -210,7 +270,7 @@ function Task(thread, env) {
   this._subscribe()
 }
 
-Task.intervalCheckTime = 500
+Task.intervalCheckTime = 200
 
 Task.prototype._getValue = function (data) {
   return data.type === 'run:error' ? createError(data) : data.value
@@ -243,8 +303,8 @@ Task.prototype.bind = function (env) {
   return this
 }
 
-Task.prototype.run = function (fn, env, args) {
-  var maxDelay, tasks
+Task.prototype.run = Task.prototype.exec = function (fn, env, args) {
+  var maxDelay, thread = this.thread
   this.time = _.now()
 
   if (!_.isFn(fn)) throw new TypeError('first argument must be a function')
@@ -253,18 +313,15 @@ Task.prototype.run = function (fn, env, args) {
   env = _.serializeMap(_.extend({}, this.env, env))
   this.memoized = null
 
-  maxDelay = this.thread.maxTaskDelay
-  if (maxDelay > Task.intervalCheckTime) {
+  maxDelay = thread.maxTaskDelay
+  if (maxDelay >= Task.intervalCheckTime) {
     initInterval(maxDelay, this)
   }
 
-  tasks = this.thread._tasks
-  if (tasks.indexOf(this) === -1) {
-    tasks.push(this)
-    this.finally(function () {
-      tasks.splice(tasks.indexOf(this), 1)
-    })
+  if (thread._tasks.indexOf(this) === -1) {
+    thread._tasks.push(this)
   }
+  this.finally(cleanTask(thread, this))
 
   this.worker.postMessage({
     id: this.id,
@@ -275,6 +332,14 @@ Task.prototype.run = function (fn, env, args) {
   })
 
   return this
+}
+
+function cleanTask(thread, task) {
+  return function () {
+    var index = thread._tasks.indexOf(task)
+    thread._latestTask = _.now()
+    if (index >= 0) thread._tasks.splice(index, 1)
+  }
 }
 
 Task.prototype.then = function (fn, errorFn) {
@@ -316,8 +381,8 @@ Task.prototype.finally = function (fn) {
 }
 
 Task.prototype.flush = function () {
-  this.memoized = this.thread =
-    this.worker = this.env = this.listeners = null
+  this.memoized = this.thread = null
+  this.worker = this.env = this.listeners = null
 }
 
 Task.prototype.flushed = function () {
@@ -375,12 +440,13 @@ function onMessage(self) {
   }
 }
 
-},{"./utils":6}],5:[function(require,module,exports){
+},{"./utils":7}],6:[function(require,module,exports){
 var _ = require('./utils')
 var workerSrc = require('./worker')
 var Task = require('./task')
 var FakeWorker = require('./fake-worker')
 var pool = require('./pool')
+var store = require('./store')
 
 var URL = window.URL || window.webkitURL
 var hasWorkers = _.isFn(window.Worker)
@@ -391,13 +457,16 @@ module.exports = Thread
 function Thread(options) {
   this._terminated = false
   this.id = _.generateUUID()
-  this._tasks = []
   this.options = {}
+  this._tasks = []
+  this._latestTask = null
   this._setOptions(options)
   this._create()
 }
 
-Thread.prototype.maxTaskDelay = 10 * 1000
+Thread.prototype.isPool = false
+Thread.prototype.maxTaskDelay = 0
+Thread.prototype.idleTime = 30 * 1000
 
 Thread.prototype._setOptions = function (options) {
   this.options.namespace = 'env'
@@ -427,6 +496,8 @@ Thread.prototype._create = function () {
     this.worker = new FakeWorker(this.id)
   }
 
+  store.push(this)
+
   this.send(_.extend({ type: 'start' }, {
     env: _.serializeMap(this.options.env),
     namespace: this.options.namespace
@@ -437,7 +508,7 @@ Thread.prototype._create = function () {
   return this
 }
 
-Thread.prototype.require = function (name, fn) {
+Thread.prototype.require = Thread.prototype.import = function (name, fn) {
   if (_.isFn(name)) {
     fn = name
     name = _.fnName(fn)
@@ -447,9 +518,11 @@ Thread.prototype.require = function (name, fn) {
     if (_.isFn(fn)) {
       this.send({ type: 'require:fn', src: fn.toString(), name: name })
     } else {
+      if (_.isArr(this.options.require)) this.options.require.push(name)
       this.send({ type: 'require:file', src: name })
     }
   } else if (_.isArr(name)) {
+    if (_.isArr(this.options.require)) this.options.require = this.options.require.concat(name)
     this.send({ type: 'require:file', src: name })
   } else if (_.isObj(name)) {
     this.send({ type: 'require:map', src: _.serializeMap(name) })
@@ -477,10 +550,7 @@ Thread.prototype.run = Thread.prototype.exec = function (fn, env, args) {
     task = new Task(this)
   }
 
-  tasks.push(task)
-  task.finally(function () {
-    tasks.splice(tasks.indexOf(task), 1)
-  })
+  this._tasks.push(task)
   _.defer(function () { task.run(fn, env, args) })
 
   return task
@@ -523,6 +593,7 @@ Thread.prototype.terminate = Thread.prototype.kill = function () {
     this.flushTasks().flush()
     this._terminated = true
     this.worker.terminate()
+    store.remove(this)
   }
   return this
 }
@@ -545,7 +616,11 @@ Thread.prototype.running = function () {
 }
 
 Thread.prototype.terminated = function () {
-  return !this.worker
+  return this._terminated
+}
+
+Thread.prototype.idle = Thread.prototype.sleep = function () {
+  return !this.running() && !this.terminated() && (_.now() - this._latestTask) > this.idleTime
 }
 
 Thread.prototype.on = Thread.prototype.addEventListener = function (type, fn) {
@@ -564,7 +639,7 @@ Thread.prototype.off = Thread.prototype.removeEventListener = function (type, fn
 
 Thread.Task = Task
 
-},{"./fake-worker":1,"./pool":3,"./task":4,"./utils":6,"./worker":7}],6:[function(require,module,exports){
+},{"./fake-worker":1,"./pool":3,"./store":4,"./task":5,"./utils":7,"./worker":8}],7:[function(require,module,exports){
 var _ = exports
 var toStr = Object.prototype.toString
 var slice = Array.prototype.slice
@@ -620,10 +695,6 @@ exports.extend = function (target) {
   return target
 }
 
-exports.clone = function (obj) {
-  return _.extend({}, obj)
-}
-
 exports.getSource = function (fn) {
   return '(' + fn.toString() + ').call(this)'
 }
@@ -646,7 +717,7 @@ exports.serializeMap = function (obj) {
 
 exports.generateUUID = function () {
   var d = new Date().getTime()
-  var uuid = 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
+  var uuid = 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function (c) {
     var r = (d + Math.random() * 16) % 16 | 0
     d = Math.floor(d / 16)
     return (c == 'x' ? r : (r & 0x7 | 0x8)).toString(16)
@@ -654,7 +725,7 @@ exports.generateUUID = function () {
   return uuid
 }
 
-},{}],7:[function(require,module,exports){
+},{}],8:[function(require,module,exports){
 module.exports = worker
 
 function worker() {
@@ -875,13 +946,8 @@ function worker() {
     }
 
     function start(e) {
-      if (e.require) {
-        require(e.require)
-      }
-      if (e.origin) {
-        origin = e.origin
-      }
-
+      if (e.require) { require(e.require) }
+      if (e.origin) { origin = e.origin }
       namespace = e.namespace || namespace
       self[namespace] = mapFields(e.env || {})
     }
