@@ -16,6 +16,7 @@ function pool(num, thread) {
       if (pending === 0 || pending < offset) {
         if (thread.terminated()) {
           threads.splice(i, 1)
+          l -= 1
         } else {
           return thread
         }
@@ -41,7 +42,6 @@ function pool(num, thread) {
 
   thread.run = thread.exec = function () {
     var args = arguments
-    var count = 0
 
     function nextThread(count) {
       var task, thread = findBestAvailableThread(count)
@@ -57,7 +57,7 @@ function pool(num, thread) {
       return task
     }
 
-    return nextThread(count)
+    return nextThread(0)
   }
 
   thread.terminate = thread.kill = function () {
