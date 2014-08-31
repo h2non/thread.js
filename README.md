@@ -113,6 +113,10 @@ to the thread in order to consum them.
 Any passed value to the thread scope will be cloned (it will be passed by value, not by reference),
 so mutation is not possible between scopes
 
+If you create a pool of threads, you must consider that threads are scope-isolated.
+So it's not supported data synchronization between threads in the pool.
+You cannot have side-effects between threads
+
 All values passed to must be JSON-serializable, meaning only primitives types, raw objects and functions.
 Same with return values from threads.
 DOM nodes, built-in objects or prototypes chains cannot be passed to the thread
@@ -584,9 +588,6 @@ $ git clone https://github.com/h2non/thread.js.git && cd thread.js
 Install dependencies
 ```bash
 $ npm install
-```
-```bash
-$ bower install
 ```
 
 Generate browser bundle source
