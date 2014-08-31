@@ -35,9 +35,10 @@
 
       var intervalId = setInterval(function () {
         if (results.length === tasks) {
+          clearInterval(intervalId)
           console.log('Results:', results)
           console.log('Used threads:', worker.threadPool.length)
-          clearInterval(intervalId)
+          worker.kill() // kill all threads
         }
       }, 250)
     </script>

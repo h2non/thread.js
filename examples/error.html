@@ -10,17 +10,13 @@
       })
 
       var task = worker.run(function (done) {
-        setTimeout(function () {
-          if (env.error) {
-            done('invalid')
-          }
-        }, 50)
+        if (env.error)
+          throw new Error('invalid')
       })
 
       task.catch(function (err) {
         console.log('Error:', err)
       })
-
     </script>
   </body>
 </html>

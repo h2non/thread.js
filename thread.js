@@ -459,7 +459,7 @@ function Thread(options) {
   this.id = _.generateUUID()
   this.options = {}
   this._tasks = []
-  this._latestTask = null
+  this._latestTask = 0
   this._setOptions(options)
   this._create()
 }
@@ -616,7 +616,8 @@ Thread.prototype.running = function () {
 }
 
 Thread.prototype.idle = Thread.prototype.sleep = function () {
-  return !this.running() && !this.terminated() && (_.now() - this._latestTask) > this.idleTime
+  return !this.running() && !this.terminated()
+    && (this._latestTask === 0 || (_.now() - this._latestTask) > this.idleTime)
 }
 
 Thread.prototype.terminated = function () {
