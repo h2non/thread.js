@@ -20,7 +20,7 @@ but provides fallback support for older browsers based on an `iframe` hack
 
 Welcome to the multithreading world in the browser made simple
 
-Getting started looking [basic usage](#basic-usage),
+Getting started with [basic usage](#basic-usage),
 some [examples](https://github.com/h2non/thread.js/tree/master/examples) or [tests](https://github.com/h2non/thread.js/tree/master/test)
 
 ## Installation
