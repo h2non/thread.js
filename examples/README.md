@@ -17,5 +17,5 @@ http-server
 
 Finally, open in a browser
 ```
-http://localhost:8000/examples
+http://localhost:8080/examples
 ```
