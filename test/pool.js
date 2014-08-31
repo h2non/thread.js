@@ -63,7 +63,7 @@ describe('pool', function () {
           var self = this
           setTimeout(function () {
             done(null, env.x * self.y)
-          }, 50)
+          }, 100)
         }, { y: 2 }).then(function (value) {
           results.push(value)
           if (results.length === poolNum) done()
