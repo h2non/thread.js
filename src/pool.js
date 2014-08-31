@@ -39,7 +39,7 @@ function pool(num, thread) {
     return task
   }
 
-  thread.run = function () {
+  thread.run = thread.exec = function () {
     var args = arguments
     var count = 0
 

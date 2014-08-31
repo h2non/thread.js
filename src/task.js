@@ -44,30 +44,32 @@ Task.prototype._subscribe = function () {
   this.worker.addEventListener('message', onMessage(this))
 }
 
-Task.prototype.bind = function (env) {
+Task.prototype.bind = Task.prototype.set = function (env) {
   _.extend(this.env, env)
   return this
 }
 
 Task.prototype.run = Task.prototype.exec = function (fn, env, args) {
   var maxDelay, thread = this.thread
-  this.time = _.now()
 
   if (!_.isFn(fn)) throw new TypeError('first argument must be a function')
-  if (_.isArr(env)) args = env
+  if (_.isArr(env)) {
+    args = env
+    env = null
+  }
 
   env = _.serializeMap(_.extend({}, this.env, env))
   this.memoized = null
+  this.time = _.now()
 
   maxDelay = thread.maxTaskDelay
   if (maxDelay >= Task.intervalCheckTime) {
     initInterval(maxDelay, this)
   }
-
   if (thread._tasks.indexOf(this) === -1) {
     thread._tasks.push(this)
   }
-  this.finally(cleanTask(thread, this))
+  this['finally'](cleanTask(thread, this))
 
   this.worker.postMessage({
     id: this.id,
@@ -97,13 +99,11 @@ Task.prototype.then = function (fn, errorFn) {
       this.listeners.success.push(fn)
     }
   }
-  if (_.isFn(errorFn)) {
-    this.catch(errorFn)
-  }
+  if (_.isFn(errorFn)) { this['catch'](errorFn) }
   return this
 }
 
-Task.prototype.catch = function (fn) {
+Task.prototype['catch'] = function (fn) {
   if (_.isFn(fn)) {
     if (this.memoized) {
       if (this.memoized.type === 'run:error')
@@ -115,7 +115,7 @@ Task.prototype.catch = function (fn) {
   return this
 }
 
-Task.prototype.finally = function (fn) {
+Task.prototype['finally'] = function (fn) {
   if (_.isFn(fn)) {
     if (this.memoized) {
       fn.call(this, this._getValue(this.memoized))

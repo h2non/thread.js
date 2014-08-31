@@ -30,10 +30,10 @@ describe('thread', function () {
   })
 
   describe('sum numbers synchronously', function () {
-    var task, job = thread()
+    var task, worker = thread()
 
     it('should run a task', function () {
-      task = job.run(function () {
+      task = worker.run(function () {
         return 2 + 2
       })
     })
@@ -48,12 +48,12 @@ describe('thread', function () {
 
   describe('sum numbers synchronously passing a context', function () {
     var task = null
-    var job = thread({
+    var worker = thread({
       env: { x: 2 }
     })
 
     it('should run a task', function () {
-      task = job.run(function () {
+      task = worker.run(function () {
         return env.x + 2
       })
     })
@@ -68,13 +68,13 @@ describe('thread', function () {
 
   describe('sum numbers asynchronously passing a context with custom namespace', function () {
     var task = null
-    var job = thread({
+    var worker = thread({
       namespace: 'global',
       env: { x: 2 }
     })
 
     it('should run a task', function () {
-      task = job.run(function (done) {
+      task = worker.run(function (done) {
         setTimeout(function () {
           done(null, global.x * 2)
         }, 50)
@@ -91,14 +91,14 @@ describe('thread', function () {
 
   describe('pass an error synchronously', function () {
     var task = null
-    var job = thread({
+    var worker = thread({
       env: { error: true }
     })
 
-    it('should run a task', function () {
-      task = job.run(function () {
+    it('should run a task', function (done) {
+      task = worker.run(function () {
         throw 'error'
-      })
+      }).finally(function () { done() })
     })
 
     it('should have a valid result', function (done) {
@@ -111,18 +111,18 @@ describe('thread', function () {
 
   describe('pass an error asynchronously', function () {
     var task = null
-    var job = thread({
+    var worker = thread({
       env: { error: true }
     })
 
-    it('should run a task', function () {
-      task = job.run(function (done) {
+    it('should run a task', function (done) {
+      task = worker.run(function (done) {
         setTimeout(function () {
           if (env.error) {
             done('message')
           }
         }, 50)
-      })
+      }).finally(function () { done() })
     })
 
     it('should have a valid result', function (done) {
@@ -135,12 +135,12 @@ describe('thread', function () {
 
   describe('import external script', function () {
     var task = null
-    var job = thread({
+    var worker = thread({
       require: ['http://cdn.rawgit.com/h2non/hu/0.1.1/hu.js']
     })
 
     it('should run a task', function () {
-      task = job.run(function () {
+      task = worker.run(function () {
         return hu.reverse('hello')
       })
     })
@@ -155,12 +155,12 @@ describe('thread', function () {
 
   describe('import external script as string', function () {
     var task = null
-    var job = thread({
+    var worker = thread({
       require: 'http://cdn.rawgit.com/h2non/hu/0.1.1/hu.js'
     })
 
     it('should run a task', function () {
-      task = job.run(function () {
+      task = worker.run(function () {
         return hu.reverse('hello')
       })
     })
@@ -175,7 +175,7 @@ describe('thread', function () {
 
   describe('pass function as require context', function () {
     var task = null
-    var job = thread({
+    var worker = thread({
       env: {
         x: 2
       },
@@ -185,7 +185,7 @@ describe('thread', function () {
     })
 
     it('should run a task', function () {
-      task = job.run(function (done) {
+      task = worker.run(function (done) {
         var y = this.y
         return env.defer(function () {
           done(null, env.x * y)
@@ -203,12 +203,12 @@ describe('thread', function () {
 
   describe('pass function to worker via require', function () {
     var task = null
-    var job = thread({
+    var worker = thread({
       env: { x: 2 }
     }).require('defer', defer)
 
     it('should run a task', function () {
-      task = job.run(function (done) {
+      task = worker.run(function (done) {
         var y = this.y
         return env.defer(function () {
           done(null, env.x * y)
@@ -226,12 +226,12 @@ describe('thread', function () {
 
   describe('bind aditional context to the task', function () {
     var task = null
-    var job = thread({
+    var worker = thread({
       env: { x: 2 }
     })
 
     it('should run a task', function () {
-      task = job.run(function () {
+      task = worker.run(function () {
         return env.x * this.y
       }, { y: 2 })
     })
@@ -244,7 +244,7 @@ describe('thread', function () {
     })
 
     it('should not exists the y context variable', function (done) {
-      job.run(function () {
+      worker.run(function () {
         return typeof this.y
       }).then(function (value) {
         expect(value).to.be.equal('undefined')
@@ -255,12 +255,12 @@ describe('thread', function () {
 
   describe('passing arguments to the task', function () {
     var task = null
-    var job = thread({
+    var worker = thread({
       env: { x: 2 }
     })
 
     it('should run a task', function () {
-      task = job.run(function (num) {
+      task = worker.run(function (num) {
         return env.x * this.y * num
       }, { y: 2 }, [2])
     })
@@ -275,12 +275,12 @@ describe('thread', function () {
 
   describe('passing arguments to the asynchronous task', function () {
     var task = null
-    var job = thread({
+    var worker = thread({
       env: { x: 2 }
     })
 
     it('should run a task', function () {
-      task = job.run(function (num, done) {
+      task = worker.run(function (num, done) {
         done(null, env.x * this.y * num)
       }, { y: 2 }, [2])
     })
@@ -295,11 +295,11 @@ describe('thread', function () {
 
   describe('idle time', function () {
     var task = null
-    var job = thread()
-    job.idleTime = 100
+    var worker = thread()
+    worker.idleTime = 100
 
     it('should run a task', function () {
-      task = job.run(function () {
+      task = worker.run(function () {
         return 4 * 2
       })
     })
@@ -307,7 +307,7 @@ describe('thread', function () {
     it('should have a idle state', function (done) {
       task.then(function () {
         setTimeout(function () {
-          expect(job.idle()).to.be.true
+          expect(worker.idle()).to.be.true
           done()
         }, 150)
       })
@@ -316,11 +316,11 @@ describe('thread', function () {
 
   describe('task compute time exceeded error', function () {
     var task = null
-    var job = thread()
-    job.maxTaskDelay = 300
+    var worker = thread()
+    worker.maxTaskDelay = 300
 
     it('should run a task', function () {
-      task = job.run(function (done) {
+      task = worker.run(function (done) {
         setTimeout(done, 500)
       })
     })
@@ -335,39 +335,39 @@ describe('thread', function () {
 
   describe('number of running tasks', function () {
     var task = null
-    var job = thread()
+    var worker = thread()
 
     it('should run multiple tasks', function () {
-      job.run(function (done) {
+      worker.run(function (done) {
         setTimeout(done, 200)
       })
-      job.run(function (done) {
-        setTimeout(done, 300)
+      worker.run(function (done) {
+        setTimeout(done, 400)
       })
     })
 
     it('should have a valid number of tasks', function () {
-      expect(job.pending()).to.be.equal(2)
+      expect(worker.pending()).to.be.equal(2)
     })
 
     it('should be running', function () {
-      expect(job.running()).to.be.true
+      expect(worker.running()).to.be.true
     })
 
     it('should be running when are not yet finished', function (done) {
       setTimeout(function () {
-        expect(job.pending()).to.be.equal(1)
-        expect(job.running()).to.be.true
+        expect(worker.pending()).to.be.equal(1)
+        expect(worker.running()).to.be.true
         done()
-      }, 250)
+      }, 300)
     })
 
     it('should kill the thread', function () {
-      job.kill()
+      worker.kill()
     })
 
     it('should be as terminated state', function () {
-      expect(job.terminated()).to.be.true
+      expect(worker.terminated()).to.be.true
     })
   })
 

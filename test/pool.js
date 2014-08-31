@@ -50,12 +50,15 @@ describe('pool', function () {
     })
   })
 
-  describe('run tasks binding a context', function () {
+  describe('run tasks binding context', function () {
     var results = []
-    var job = thread({ env: { x: 2 } }).pool(4)
+    var poolNum = 8
+    var job = thread({ env: { x: 2 } }).pool(poolNum)
+    var count = 0
 
     it('should run multiple tasks asynchronously', function (done) {
       (function runTask() {
+        count += 1
         job.run(function (done) {
           var self = this
           setTimeout(function () {
@@ -63,39 +66,44 @@ describe('pool', function () {
           }, 50)
         }, { y: 2 }).then(function (value) {
           results.push(value)
-          if (job.threadPool.length === 4 && results.length === 4) done()
+          if (results.length === poolNum) done()
         })
-        if (job.threadPool.length < 4) setTimeout(runTask, 1)
+        if (count < poolNum) setTimeout(runTask, 1)
       }())
     })
 
     it('should have a valid result', function () {
-      expect(results).to.be.deep.equal([4, 4, 4, 4])
+      expect(results).to.be.deep.equal([4, 4, 4, 4, 4, 4, 4, 4])
+      expect(job.threadPool.length).to.be.equal(poolNum)
       expect(job.pending()).to.be.equal(0)
     })
   })
 
   describe('import scripts in pool of threads', function () {
     var results = []
-    var job = thread({ env: { x: 2 } }).pool(4)
+    var poolNum = 4
+    var count = 0
+    var job = thread({ env: { x: 2 } }).pool(poolNum)
     job.require('http://cdn.rawgit.com/h2non/hu/0.1.1/hu.js')
 
     it('should run multiple tasks', function (done) {
       (function runTask() {
+        count += 1
         job.run(function (done) {
           setTimeout(function () {
             done(null, hu.tail([4, 4][0]))
           }, 50)
         }).then(function (value) {
           results.push(value)
-          if (job.threadPool.length === 4 && results.length === 4) done()
+          if (count === results.length) done()
         })
-        if (job.threadPool.length < 4) setTimeout(runTask, 1)
+        if (count < poolNum) setTimeout(runTask, 1)
       }())
     })
 
     it('should have a valid result', function () {
       expect(results).to.be.deep.equal([4, 4, 4, 4])
+      expect(job.threadPool.length).to.be.equal(poolNum)
       expect(job.pending()).to.be.equal(0)
     })
   })

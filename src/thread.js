@@ -65,7 +65,7 @@ Thread.prototype._create = function () {
   return this
 }
 
-Thread.prototype.require = Thread.prototype.import = function (name, fn) {
+Thread.prototype.require = Thread.prototype['import'] = function (name, fn) {
   if (_.isFn(name)) {
     fn = name
     name = _.fnName(fn)
@@ -113,7 +113,7 @@ Thread.prototype.run = Thread.prototype.exec = function (fn, env, args) {
   return task
 }
 
-Thread.prototype.bind = function (env) {
+Thread.prototype.bind = Thread.prototype.set = function (env) {
   this.send({ type: 'env', data: _.serializeMap(env) })
   return this
 }
@@ -172,12 +172,12 @@ Thread.prototype.running = function () {
   return this._tasks.length > 0
 }
 
-Thread.prototype.terminated = function () {
-  return this._terminated
-}
-
 Thread.prototype.idle = Thread.prototype.sleep = function () {
   return !this.running() && !this.terminated() && (_.now() - this._latestTask) > this.idleTime
+}
+
+Thread.prototype.terminated = function () {
+  return this._terminated
 }
 
 Thread.prototype.on = Thread.prototype.addEventListener = function (type, fn) {

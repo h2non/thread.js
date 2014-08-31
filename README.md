@@ -9,7 +9,7 @@
 </table>
 
 **thread.js** is lightweight and rich featured library that **simplifies JavaScript parallel computing in browser**
-environments through a simple and elegant [programmatic API](#api)
+environments through a clean and elegant [API](#api)
 
 It allows you to run tasks in a non-blocking real thread in a really simple way.
 It also provides built-in support for creating pool of threads to distribute the
@@ -18,7 +18,10 @@ task load across multiple workers transparently using a simple best availability
 It uses [Web Workers](http://en.wikipedia.org/wiki/Web_worker) to create real threads,
 but provides fallback support for older browsers based on an `iframe` hack
 
-Welcome to the multithreading world in the browser
+Welcome to the multithreading world in the browser made simple
+
+Getting started looking [basic usage](#basic-usage),
+some [examples](https://github.com/h2non/thread.js/tree/master/examples) or [tests](https://github.com/h2non/thread.js/tree/master/test)
 
 ## Installation
 
@@ -31,14 +34,14 @@ Via [Component](http://component.io/)
 component install h2non/thread.js
 ```
 
-Or loading the script remotely (just for testing or development)
+Or loading the script remotely
 ```html
 <script src="//cdn.rawgit.com/h2non/thread.js/0.1.1/thread.js"></script>
 ```
 
 ### Environments
 
-Cross-browser support guaranteed running tests in [Testling](https://ci.testling.com/)
+Cross-browser support guaranteed running tests in [BrowserStack](http://browserstack.com/)
 
 - Chrome >= 5
 - Firefox >= 3
@@ -108,25 +111,15 @@ task.then(function (array) {
 You should be aware of some limitations in threads
 
 Threads has it's own isolated scope. That means you must explicitly bind values or functions
-to the thread in order to consum them
+to the thread in order to consum them.
+Any passed value to the thread scope will be cloned (it will be passed by value, not by reference),
+so mutation is not possible between scopes
 
-Any passed value to the thread isolated scope will be cloned (it will be passed by value, not by reference)
+All values passed to must be JSON-serializable, meaning only primitives types, raw objects and functions.
+Same with return values from threads.
+DOM nodes, built-in objects or prototypes chains cannot be passed to the thread
 
-All values passed to must be JSON-serializable, meaning only primitives, built-in objects and functions.
-Same with return values from threads. No DOM nodes, custom objects or prototypes
-
-Additionally, threads do not have access to the DOM
-
-<!--
-## Modules
-
-A list of tiny and useful modules you could `require` in `thread.js`
-
-- [HTTP](https://github.com/lil-js/http) - Tiny, full featured HTTP client
-- [URI](https://github.com/lil-js/uri) - URI/URL/URN parser and generator
-- [Type](https://github.com/lil-js/type) - Reliable type checking
-- [UserAgent](https://github.com/lil-js/ua) - User agent parser
--->
+Additionally, threads do not have access to the DOM API
 
 ## API
 
@@ -227,7 +220,7 @@ for (var i = 0; i < tasks; i += 1) {
 ```
 
 #### thread#bind(obj)
-Return: `thread`
+Return: `thread` Alias: `set`
 
 Bind a map of values to the isolated thread scope.
 You can do the same passing an object via `thread#require()`
@@ -464,7 +457,7 @@ var pool = thread().pool(2)
 pool.isPool() // -> true
 ```
 
-### thread.Task(thread, env)
+### thread.Task(thread [, env])
 Return: `task`
 
 Create a new task in the given thread
@@ -557,7 +550,7 @@ Return `true` if task data was already flushed
 #### thread.total()
 Return: `number`
 
-Return the total number of running threads
+Return the total number of threads created (running and idle)
 
 #### thread.running()
 Return: `array`

@@ -9,11 +9,11 @@ if (typeof __testlingConsole !== 'undefined') {
 
 describe('task', function () {
 
-  describe('bind custom environment to the asynchronous task', function () {
+  describe('bind environment to the asynchronous task', function () {
     var worker = thread({ env: { x: 2 } })
     var task = new thread.Task(worker)
 
-    it('should bind custom values', function () {
+    it('should bind values', function () {
       task.bind({ y: 2 })
     })
 
@@ -31,11 +31,11 @@ describe('task', function () {
     })
   })
 
-  describe('bind custom functions to the asynchronous task', function () {
+  describe('bind functions to the asynchronous task', function () {
     var worker = thread({ env: { x: 2 } })
     var task = new thread.Task(worker)
 
-    it('should bind custom values', function () {
+    it('should bind values', function () {
       task.bind({
         y: 2,
         pow: function (x, y) { return Math.pow(x, y) }
@@ -51,9 +51,8 @@ describe('task', function () {
     it('should have a valid result', function (done) {
       task.then(function (value) {
         expect(value).to.be.equal(8)
+      }).finally(function () {
         done()
-      }, function (err) {
-        console.error(err)
       })
     })
   })
