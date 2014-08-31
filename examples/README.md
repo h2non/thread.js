@@ -1,4 +1,4 @@
-# Example setup
+# Examples setup
 
 Clone this repository
 ```bash
