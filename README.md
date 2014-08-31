@@ -1,7 +1,5 @@
 # thread.js [![Build Status](https://api.travis-ci.org/h2non/thread.js.svg?branch=master)][travis]
 
-[![browser support](https://ci.testling.com/h2non/thread.js.png)](https://ci.testling.com/h2non/thread.js)
-
 <table>
 <tr>
 <td><b>Stage</b></td><td>beta</td>
