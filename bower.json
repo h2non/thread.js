@@ -35,8 +35,5 @@
     ".npmignore",
     "package.json",
     "examples"
-  ],
-  "devDependencies": {
-    "hu": "~0.1.1"
-  }
+  ]
 }
