@@ -457,7 +457,7 @@ Check if the current `thread` instance is a pool of threads
 
 ```js
 var pool = thread().pool(2)
-pool.isPool() // -> true
+pool.isPool // -> true
 ```
 
 ### thread.Task(thread [, env])
@@ -550,6 +550,8 @@ Return: `boolean`
 
 Return `true` if task data was already flushed
 
+### Static members
+
 #### thread.total()
 Return: `number`
 
@@ -569,6 +571,15 @@ Return an `array` of the idle threads (thread which has no execute tasks for a l
 Alias: `terminateAll`
 
 Kill all the existent threads
+
+#### thread.flush()
+
+Flush the built-in threads store manager (but they will not be killed)
+
+#### thread.VERSION
+Type: `string`
+
+Current library semantic version
 
 ## Contributing
 
