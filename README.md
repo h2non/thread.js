@@ -116,7 +116,7 @@ so mutation is not possible between scopes
 If you create a pool of threads, you must consider that threads in the pool are scope-isolated too.
 In other words, it's not supported scope synchronization between threads in the pool.
 That is positive becouse you cannot have side-effects between threads,
-but must be aware about global scope dependencies in your code in other to avoid inconsistency between threads
+but should be aware about global scope dependencies and mutation in your code in other to avoid inconsistency between threads
 
 All values passed to must be JSON-serializable, meaning only primitives types, raw objects and functions.
 Same with return values from threads.
