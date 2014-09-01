@@ -113,9 +113,10 @@ to the thread in order to consum them.
 Any passed value to the thread scope will be cloned (it will be passed by value, not by reference),
 so mutation is not possible between scopes
 
-If you create a pool of threads, you must consider that threads are scope-isolated.
-So it's not supported data synchronization between threads in the pool.
-You cannot have side-effects between threads
+If you create a pool of threads, you must consider that threads in the pool are scope-isolated too.
+In other words, it's not supported scope synchronization between threads in the pool.
+That is positive becouse you cannot have side-effects between threads,
+but must be aware about global scope dependencies in your code in other to avoid inconsistency between threads
 
 All values passed to must be JSON-serializable, meaning only primitives types, raw objects and functions.
 Same with return values from threads.
