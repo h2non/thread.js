@@ -153,8 +153,11 @@ thread({
 #### thread#run(fn, env, args)
 Return: `task` Alias: `exec`
 
-Run the given function in the thread scope context.
-You can optionally bind a custom context (`this`) or passing function arguments (as `array`)
+Run the given function in the thread isolated scope.
+You can optionally bind a custom context (as `map` of values) or passing function arguments
+(as `array`) to be injected when the function will be invoked
+
+Bind values must be serializable types (see [threads limitations](#threads-limitations))
 
 Run a function and return the result synchronously (`return` statement required)
 ```js
