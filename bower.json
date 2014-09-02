@@ -17,6 +17,7 @@
     "non-blocking",
     "blocking",
     "multiprocess",
+    "multithreading",
     "child",
     "multicore",
     "spawn"

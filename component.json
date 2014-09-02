@@ -22,6 +22,7 @@
     "multiprocess",
     "child",
     "multicore",
+    "multithreading",
     "spawn"
   ]
 }
