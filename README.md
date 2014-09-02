@@ -1,11 +1,5 @@
 # thread.js [![Build Status](https://api.travis-ci.org/h2non/thread.js.svg?branch=master)][travis]
 
-<table>
-<tr>
-<td><b>Stage</b></td><td>beta</td>
-</tr>
-</table>
-
 **thread.js** is lightweight and rich featured library that **simplifies JavaScript parallel computing in browser**
 environments through a clean and elegant [API](#api)
 
