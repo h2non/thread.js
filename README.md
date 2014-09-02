@@ -56,7 +56,7 @@ Otherwise it will be available as global
 var thread = require('thread')
 ```
 
-Create a new thread with custom scope and library dependencies
+Create a new thread with custom scope environment and import external libraries
 ```js
 var worker = thread({
   env: { numbers: [1,2,3] },
@@ -154,9 +154,9 @@ thread({
 Return: `task` Alias: `exec`
 
 Run the given function in the thread scope context.
-You can optionally bind a custom context (exposed via `this` keyword) or passing function arguments (as `array` notation)
+You can optionally bind a custom context (`this`) or passing function arguments (as `array`)
 
-Run a function and return the result synchronously
+Run a function and return the result synchronously (`return` statement required)
 ```js
 thread().run(function () {
   return 2 * 2
