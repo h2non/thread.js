@@ -37,7 +37,7 @@ browserify:
 		--entry ./src/main.js >> ./thread.js
 
 uglify:
-	$(UGLIFYJS) thread.js --mangle --preamble $(BANNER) > thread.min.js
+	$(UGLIFYJS) thread.js --mangle --preamble $(BANNER) --source-map thread.min.js.map > thread.min.js
 
 cleanbrowser:
 	rm -f *.js

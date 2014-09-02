@@ -6,7 +6,8 @@
   "repository": "h2non/thread.js",
   "scripts": [
     "thread.js",
-    "thread.min.js"
+    "thread.min.js",
+    "thread.min.js.map"
   ],
   "license": "MIT",
   "keywords": [
