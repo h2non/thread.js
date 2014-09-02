@@ -254,9 +254,15 @@ Return: `thread` Alias: `import`
 Load remote scripts from a valid URL, bind an object or functions to the thread isolated scope.
 Passed values will be exposed in the global namespace (default to `env`)
 
-Loading a remote script
+Importing a remote script
 ```js
-thread().require('http://cdn.rawgit.com/h2non/hu/0.1.1/hu.js')
+thread()
+  .require('http://cdn.rawgit.com/h2non/hu/0.1.1/hu.js')
+  .run(function () {
+    return typeof hu === 'object'
+  }).then(function (exists) {
+    console.log(exists) // -> true
+  })
 ```
 
 Or multiple scripts
@@ -291,7 +297,7 @@ thread().require({
 })
 ```
 
-Bind values will be available in the global namespace object
+Bind values will be available in the global namespace object (default to `env`)
 
 #### thread#flush()
 Return: `thread`
