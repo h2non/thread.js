@@ -106,7 +106,7 @@ task.then(function (array) {
 
 ## Threads limitations
 
-You should be aware of some limitations in threads
+You should be aware of some limitations while using threads
 
 Threads has it's own isolated scope. That means you must explicitly bind values or functions
 to the thread in order to consum them.
