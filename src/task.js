@@ -52,7 +52,7 @@ Task.prototype.bind = Task.prototype.set = function (env) {
 Task.prototype.run = Task.prototype.exec = function (fn, env, args) {
   var maxDelay, thread = this.thread
 
-  if (this.thread._terminated) throw new Error('cannot execute task, the thread was terminated')
+  if (this.thread._terminated) throw new Error('cannot execute the task, the thread was terminated')
   if (!_.isFn(fn)) throw new TypeError('first argument must be a function')
   if (_.isArr(env)) {
     args = env
