@@ -1,7 +1,7 @@
 # thread.js [![Build Status](https://api.travis-ci.org/h2non/thread.js.svg?branch=master)][travis] [![Stories in Ready](https://badge.waffle.io/h2non/thread.js.png?label=ready&title=Ready)](https://waffle.io/h2non/thread.js)
 
 **thread.js** is lightweight and rich featured library that **simplifies JavaScript parallel computing in browser**
-environments through a clean and elegant [API](#api)
+environments through a clean and elegant [API](#api) with promise-based asynchronous handling
 
 It allows you to run tasks in a non-blocking real thread in a really simple way.
 It also provides built-in support for creating pool of threads to distribute the
@@ -10,7 +10,7 @@ task load across multiple workers transparently using a simple best availability
 It uses [Web Workers](http://en.wikipedia.org/wiki/Web_worker) to create real threads,
 but provides fallback support for older browsers based on an `iframe` hack
 
-Welcome to the multithreading world in the browser made simple
+Welcome to the multithreading world in the browser, now made simple and funny
 
 Getting started with [basic usage](#basic-usage),
 some [examples](https://github.com/h2non/thread.js/tree/master/examples) or [tests](https://github.com/h2non/thread.js/tree/master/test) and be aware about [threads limitations](#threads-limitations)
@@ -81,12 +81,14 @@ var task = worker.run(function (done) {
 })
 ```
 
-Consuming the computed result
+Consuming the computed result (based on a Promise API)
 ```js
 task.then(function (array) {
   console.log(array) // -> [3, 1, 2]
 }).catch(function (err) {
   console.log('Ups:', err.message)
+}).finally(function (result) {
+  console.log('Final result:', result) // -> [3, 1, 2]
 })
 ```
 
