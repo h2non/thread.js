@@ -12,7 +12,7 @@ var BlobBuilder = window.BlobBuilder || window.WebKitBlobBuilder || window.MozBl
 module.exports = Thread
 
 function Thread(options) {
-  this._terminated = false
+  this.terminated = false
   this.id = _.generateUUID()
   this.options = {}
   this._tasks = []
@@ -145,10 +145,10 @@ Thread.prototype.pool = function (num) {
 pool.Thread = Thread
 
 Thread.prototype.terminate = Thread.prototype.kill = function () {
-  if (!this._terminated) {
+  if (!this.terminated) {
     this.options = {}
     this.flushTasks().flush()
-    this._terminated = true
+    this.terminated = true
     this.worker.terminate()
     store.remove(this)
   }
@@ -156,10 +156,10 @@ Thread.prototype.terminate = Thread.prototype.kill = function () {
 }
 
 Thread.prototype.start = Thread.prototype.init = function (options) {
-  if (this._terminated) {
+  if (this.terminated) {
     this._setOptions(options)
     this._create()
-    this._terminated = false
+    this.terminated = false
   }
   return this
 }
@@ -173,12 +173,8 @@ Thread.prototype.running = function () {
 }
 
 Thread.prototype.idle = Thread.prototype.sleep = function () {
-  return !this.running() && !this.terminated()
+  return !this.running() && !this.terminated
     && (this._latestTask === 0 || (_.now() - this._latestTask) > this.idleTime)
-}
-
-Thread.prototype.terminated = function () {
-  return this._terminated
 }
 
 Thread.prototype.on = Thread.prototype.addEventListener = function (type, fn) {

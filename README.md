@@ -404,14 +404,14 @@ setTimeout(function () {
 }, 2000)
 ```
 
-#### thread#terminated()
-Return: `boolean`
+#### thread#terminated
+Type: `boolean`
 
-Return `true` if the current thread is under terminated status
+Expose the thread run state
 
 ```js
-thread().terminated() // -> false
-thread().kill().terminated() // -> true
+thread().terminated // -> false
+thread().kill().terminated // -> true
 ```
 
 #### thread#on(type, handler)

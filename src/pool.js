@@ -14,7 +14,7 @@ function pool(num, thread) {
       thread = threads[i]
       pending = thread.pending()
       if (pending === 0 || pending < offset) {
-        if (thread.terminated()) {
+        if (thread.terminated) {
           threads.splice(i, 1)
           l -= 1
         } else {

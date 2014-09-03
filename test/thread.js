@@ -367,7 +367,7 @@ describe('thread', function () {
     })
 
     it('should be as terminated state', function () {
-      expect(worker.terminated()).to.be.true
+      expect(worker.terminated).to.be.true
     })
   })
 
