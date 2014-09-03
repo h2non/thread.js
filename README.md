@@ -81,7 +81,7 @@ var task = worker.run(function (done) {
 })
 ```
 
-Consuming the computed result (based on a Promise API)
+Consuming the computed result (promise-based API)
 ```js
 task.then(function (array) {
   console.log(array) // -> [3, 1, 2]
