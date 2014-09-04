@@ -215,6 +215,10 @@ store.push = function (thread) {
   buf.push(thread)
 }
 
+store.all = function () {
+  return buf.slice()
+}
+
 store.remove = function (thread) {
   var index = buf.indexOf(thread)
   if (index >= 0) buf.splice(index, 1)
