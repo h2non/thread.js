@@ -3,7 +3,6 @@ MOCHA = ./node_modules/.bin/mocha
 UGLIFYJS = ./node_modules/.bin/uglifyjs
 BANNER = "/*! thread.js - v0.1 - MIT License - https://github.com/h2non/thread.js */"
 MOCHA_PHANTOM = ./node_modules/.bin/mocha-phantomjs
-MOCHA = ./node_modules/.bin/mocha
 
 define release
 	VERSION=`node -pe "require('./package.json').version"` && \

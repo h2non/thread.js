@@ -562,6 +562,11 @@ Return: `number`
 
 Return the total number of threads created (running and idle)
 
+#### thread.all()
+Return: `array`
+
+Return an array with all created threads
+
 #### thread.running()
 Return: `array`
 

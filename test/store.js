@@ -9,8 +9,11 @@ if (typeof __testlingConsole !== 'undefined') {
 
 describe('store', function () {
 
-  it('should create a thread', function (done) {
+  before(function () {
     thread.killAll()
+  })
+
+  it('should create a thread', function (done) {
     thread().run(function (done) {
       setTimeout(done, 100)
     }).then(function () { done() })
