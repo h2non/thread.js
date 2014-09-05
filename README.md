@@ -116,7 +116,7 @@ but should be aware about global scope dependencies and mutation in your code in
 
 All values passed to must be JSON-serializable, meaning only primitives types, raw objects and functions.
 Same with return values from threads.
-DOM nodes, built-in objects or prototypes chains cannot be passed to the thread
+DOM nodes, built-in objects or functions and prototypes chains cannot be passed to the thread
 
 Additionally, threads do not have access to the DOM API
 
@@ -422,7 +422,10 @@ Return: `thread` Alias: `addEventListener`
 Add a custom worker event handler. By default you don't need to handle
 events directly, use it only for exceptional specific purposes
 
-Supported event types are `error` and `message`
+Supported event are:
+
+- **error**
+- **message**
 
 #### thread#off(type, handler)
 Return: `thread` Alias: `removeEventListener`
@@ -580,7 +583,12 @@ Return an `array` of the idle threads (thread which has no execute tasks for a l
 #### thread.killAll()
 Alias: `terminateAll`
 
-Kill all the existent threads
+Kill all the created threads (under `active` or `idle` state)
+
+#### thread.killIdle()
+Alias: `terminateIdle`
+
+Kill all the threads under `idle` state
 
 #### thread.flush()
 

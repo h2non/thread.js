@@ -46,3 +46,9 @@ store.killAll = function () {
     thread.kill()
   })
 }
+
+store.killIdle = function () {
+  _.each(store.idle(), function (thread) {
+    thread.kill()
+  })
+}

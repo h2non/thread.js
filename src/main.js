@@ -17,4 +17,4 @@ ThreadFactory.running = store.running
 ThreadFactory.idle = store.idle
 ThreadFactory.flush = store.flush
 ThreadFactory.killAll = ThreadFactory.terminateAll = store.killAll
-
+ThreadFactory.killIdle = ThreadFactory.terminateIdle = store.killIdle
