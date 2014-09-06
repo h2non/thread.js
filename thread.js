@@ -116,7 +116,7 @@ function ThreadFactory(options) {
   return new Thread(options)
 }
 
-ThreadFactory.VERSION = '0.1.1'
+ThreadFactory.VERSION = '0.1.2'
 ThreadFactory.create = ThreadFactory
 ThreadFactory.Task = Thread.Task
 ThreadFactory.Thread = Thread
