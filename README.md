@@ -60,7 +60,7 @@ var worker = thread({
 })
 ```
 
-Synchronous example
+Running a synchronous task in the thread
 ```js
 var task = worker.run(function () {
   return _.sortBy(env.numbers, function (num) {
@@ -69,7 +69,7 @@ var task = worker.run(function () {
 })
 ```
 
-Asynchronous example
+Running an asynchronous task in the thread
 ```js
 var task = worker.run(function (done) {
   doAsyncStuff(function () {
