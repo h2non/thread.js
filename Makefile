@@ -48,6 +48,9 @@ mocha:
 loc:
 	wc -l src/*
 
+gzip:
+	gzip -c thread.js | wc -c
+
 release:
 	@$(call release, patch)
 
