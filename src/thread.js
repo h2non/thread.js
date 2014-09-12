@@ -191,4 +191,8 @@ Thread.prototype.off = Thread.prototype.removeEventListener = function (type, fn
   return this
 }
 
+Thread.prototype.toString = function () {
+  return '[object Thread]'
+}
+
 Thread.Task = Task

@@ -645,6 +645,10 @@ Thread.prototype.off = Thread.prototype.removeEventListener = function (type, fn
   return this
 }
 
+Thread.prototype.toString = function () {
+  return '[object Thread]'
+}
+
 Thread.Task = Task
 
 },{"./fake-worker":1,"./pool":3,"./store":4,"./task":5,"./utils":7,"./worker":8}],7:[function(require,module,exports){
