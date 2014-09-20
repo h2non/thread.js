@@ -82,7 +82,7 @@ FakeWorker.prototype.removeEventListener = function (type, fn) {
       pool.splice(0, pool.length)
     } else {
       index = pool.indexOf(fn)
-      if (index > 0) {
+      if (index >= 0) {
         pool.splice(index, 1)
       }
     }
