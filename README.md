@@ -28,12 +28,12 @@ component install h2non/thread.js
 
 Or loading the script remotely
 ```html
-<script src="//cdn.rawgit.com/h2non/thread.js/0.1.2/thread.js"></script>
+<script src="//cdn.rawgit.com/h2non/thread.js/0.1.3/thread.js"></script>
 ```
 
 ### Environments
 
-Cross-browser support guaranteed running tests in [BrowserStack](http://browserstack.com/)
+Cross-browser support guaranteed running tests with [Karma](http://karma-runner.github.io/) and [BrowserStack](http://browserstack.com/)
 
 - Chrome >= 5
 - Firefox >= 3
@@ -207,7 +207,9 @@ function runAsyncTask(num) {
         done(null, env.x * 2)
       }, Math.random() * 1000)
     }).then(function (result) {
-      console.log('Task:', num, '- Result:', result, '- Used threads:', pool.threadPool.length)
+      console.log('Task:', num)
+      console.log('Result:', result)
+      console.log('Used threads:', pool.threadPool.length)
       if (count++ === tasks) {
         console.log('Tasks finished')
         pool.kill() // kill all pool threads

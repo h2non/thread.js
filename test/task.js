@@ -1,11 +1,4 @@
-var expect, thread
-if (typeof __testlingConsole !== 'undefined') {
-  expect = require('chai').expect
-  thread = require('../src/main')
-} else {
-  expect = browserRequire('chai').expect
-  thread = browserRequire('thread')
-}
+var expect = chai.expect
 
 describe('task', function () {
 
