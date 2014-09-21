@@ -632,7 +632,7 @@ Run tests
 $ make test
 ```
 
-See the [examples](http://localhost:8080/examples)
+See the [examples](https://github.com/h2non/thread.js/tree/master/examples)
 ```bash
 $ ./node_modules/.bin/http-server
 ```
