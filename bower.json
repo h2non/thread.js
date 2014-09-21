@@ -29,6 +29,7 @@
     "src",
     "lib",
     "test",
+    "karma.conf.js",
     "Makefile",
     ".editorconfig",
     ".gitignore",
