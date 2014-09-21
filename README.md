@@ -31,7 +31,7 @@ Or loading the script remotely
 <script src="//cdn.rawgit.com/h2non/thread.js/0.1.3/thread.js"></script>
 ```
 
-### Environments
+## Environments
 
 Cross-browser support guaranteed running tests with [Karma](http://karma-runner.github.io/) and [BrowserStack](http://browserstack.com/)
 
@@ -41,7 +41,7 @@ Cross-browser support guaranteed running tests with [Karma](http://karma-runner.
 - Opera >= 10
 - IE >= 8
 
-### Basic usage
+## Basic usage
 
 If `require` is available, you must use it to fetch the module.
 Otherwise it will be available as global
