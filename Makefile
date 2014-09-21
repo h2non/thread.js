@@ -6,7 +6,7 @@ MOCHA_PHANTOM = ./node_modules/.bin/mocha-phantomjs
 KARMA = ./node_modules/karma/bin/karma
 
 define release
-	VERSION=`node -pe "require('./package.json').version"` && \
+	VERSION=`node -pe "require('./bower.json').version"` && \
 	NEXT_VERSION=`node -pe "require('semver').inc(\"$$VERSION\", '$(1)')"` && \
 	node -e "\
 		var j = require('./bower.json');\
