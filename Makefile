@@ -24,7 +24,7 @@ endef
 
 default: all
 all: test
-browser: cleanbrowser banner browserify uglify
+browser: banner browserify uglify
 test: browser mocha
 
 banner:
@@ -38,9 +38,6 @@ browserify:
 
 uglify:
 	$(UGLIFYJS) thread.js --mangle --preamble $(BANNER) --source-map thread.min.js.map > thread.min.js
-
-cleanbrowser:
-	rm -f *.js
 
 mocha:
 	$(MOCHA_PHANTOM) --reporter spec --ui bdd test/runner.html
