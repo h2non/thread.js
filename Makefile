@@ -50,7 +50,7 @@ loc:
 	wc -l src/*
 
 gzip:
-	gzip -c thread.js | wc -c
+	gzip -c thread.min.js | wc -c
 
 release:
 	@$(call release, patch)
