@@ -40,10 +40,8 @@ Task.prototype.run = Task.prototype.exec = function (fn, env, args) {
   if (!_.isFn(fn))
     throw new TypeError('first argument must be a function')
 
-  if (_.isArr(env)) {
-    args = env
-    env = null
-  }
+  if (_.isArr(arguments[1]))
+    args = arguments[1]
   if (_.isObj(arguments[2]))
     env = arguments[2]
 

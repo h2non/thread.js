@@ -9,8 +9,8 @@ var removeEventListener = window[window.removeEventListener ? 'removeEventListen
 module.exports = FakeWorker
 
 function FakeWorker(id) {
-  this.listeners = {}
   this.id = id
+  this.listeners = {}
   this._create()
   this._setupListeners()
   this._initialize()
@@ -26,7 +26,7 @@ FakeWorker.prototype._create = function () {
 
 FakeWorker.prototype._subscribeListeners = function (type) {
   var listeners = this.listeners
-  if (eventMethod === 'attachEvent') type = 'on' + type;
+  if (eventMethod === 'attachEvent') type = 'on' + type
 
   function eventHandler(e) {
     if (e.data && e.data.owner === 'thread.js') {
@@ -80,9 +80,7 @@ FakeWorker.prototype.removeEventListener = function (type, fn) {
       pool.splice(0, pool.length)
     } else {
       index = pool.indexOf(fn)
-      if (index >= 0) {
-        pool.splice(index, 1)
-      }
+      if (index >= 0) pool.splice(index, 1)
     }
   }
 }
