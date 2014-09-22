@@ -654,6 +654,7 @@ Thread.Task = Task
 var _ = exports
 var toStr = Object.prototype.toString
 var slice = Array.prototype.slice
+var isArrayNative = Array.isArray
 
 exports.now = function () {
   return new Date().getTime()
@@ -668,7 +669,7 @@ exports.isObj = function (o) {
 }
 
 exports.isArr = function (o) {
-  return o && toStr.call(o) === '[object Array]'
+  return o && isArrayNative ? isArrayNative(o) : toStr.call(o) === '[object Array]'
 }
 
 exports.toArr = function (args) {
@@ -752,6 +753,7 @@ function worker() {
     var ready = false
     var queue, origin, scriptsLoad, intervalId = null
     var fnRegex = /^\$\$fn\$\$/
+    var isArrayNative = Array.isArray
     self.addEventListener = self[eventMethod]
 
     function isObj(o) {
@@ -759,7 +761,7 @@ function worker() {
     }
 
     function isArr(o) {
-      return o && Array.isArray ? Array.isArray(o) : toStr.call(o) === '[object Array]'
+      return o && isArrayNative ? isArrayNative(o) : toStr.call(o) === '[object Array]'
     }
 
     function mapFields(obj) {

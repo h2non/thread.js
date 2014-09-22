@@ -20,6 +20,7 @@ function worker() {
     var ready = false
     var queue, origin, scriptsLoad, intervalId = null
     var fnRegex = /^\$\$fn\$\$/
+    var isArrayNative = Array.isArray
     self.addEventListener = self[eventMethod]
 
     function isObj(o) {
@@ -27,7 +28,7 @@ function worker() {
     }
 
     function isArr(o) {
-      return o && Array.isArray ? Array.isArray(o) : toStr.call(o) === '[object Array]'
+      return o && isArrayNative ? isArrayNative(o) : toStr.call(o) === '[object Array]'
     }
 
     function mapFields(obj) {
