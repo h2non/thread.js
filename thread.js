@@ -232,20 +232,20 @@ store.total = function () {
   return buf.length
 }
 
-store.running = function () {
-  var running = []
+function getByStatus(type) {
+  var typeBuf = []
   _.each(buf, function (thread) {
-    if (thread.running()) running.push(thread)
+    if (thread[type]()) typeBuf.push(thread)
   })
-  return running
+  return typeBuf
+}
+
+store.running = function () {
+  return getByStatus('running')
 }
 
 store.idle = function () {
-  var idle = []
-  _.each(buf, function (thread) {
-    if (thread.idle()) idle.push(thread)
-  })
-  return idle
+  return getByStatus('idle')
 }
 
 store.killAll = function () {
@@ -272,11 +272,7 @@ function Task(thread, env) {
   this.worker = thread.worker
   this.env = env || {}
   this.time = this.memoized = null
-  this.listeners = {
-    error: [],
-    success: [],
-    end: []
-  }
+  this.listeners = { error: [], success: [], end: [] }
   this._subscribe()
 }
 
@@ -287,21 +283,8 @@ Task.prototype._getValue = function (data) {
 }
 
 Task.prototype._trigger = function (value, type) {
-  if (typeof this._timer === 'number') { clearTimer(this) }
+  if (typeof this._timer === 'number') clearTimer(this)
   dispatcher(this, value)(this.listeners[type])
-}
-
-function dispatcher(self, value) {
-  return function recur(pool) {
-    var fn
-    if (_.isArr(pool)) {
-      fn = pool.shift()
-      if (fn) {
-        fn.call(self, value)
-        if (pool.length) recur(pool)
-      }
-    }
-  }
 }
 
 Task.prototype._subscribe = function () {
@@ -314,10 +297,13 @@ Task.prototype.bind = Task.prototype.set = function (env) {
 }
 
 Task.prototype.run = Task.prototype.exec = function (fn, env, args) {
-  var maxDelay, thread = this.thread
+  var thread = this.thread
 
-  if (!_.isFn(fn)) throw new TypeError('first argument must be a function')
-  if (thread._terminated) throw new Error('cannot execute the task, the thread was terminated')
+  if (thread._terminated)
+    throw new Error('cannot execute the task, the thread was terminated')
+  if (!_.isFn(fn))
+    throw new TypeError('first argument must be a function')
+
   if (_.isArr(env)) {
     args = env
     env = null
@@ -327,66 +313,43 @@ Task.prototype.run = Task.prototype.exec = function (fn, env, args) {
   this.memoized = null
   this.time = _.now()
 
-  maxDelay = thread.maxTaskDelay
-  if (maxDelay >= Task.intervalCheckTime) {
-    initInterval(maxDelay, this)
-  }
-  if (thread._tasks.indexOf(this) === -1) {
+  if (thread.maxTaskDelay >= Task.intervalCheckTime)
+    this._checkInterval(thread.maxTaskDelay)
+  if (thread._tasks.indexOf(this) === -1)
     thread._tasks.push(this)
-  }
-  this['finally'](cleanTask(thread, this))
 
-  this.worker.postMessage({
-    id: this.id,
-    type: 'run',
-    env: env,
-    src: fn.toString(),
-    args: args
-  })
+  this['finally'](cleanTask(thread, this))
+  this._send(env, fn, args)
 
   return this
 }
 
-function cleanTask(thread, task) {
-  return function () {
-    var index = thread._tasks.indexOf(task)
-    thread._latestTask = _.now()
-    if (index >= 0) thread._tasks.splice(index, 1)
+Task.prototype._addHandler = function (type, fn) {
+  if (this.memoized) {
+    if (this.memoized.type === ('run:' + type))
+      fn.call(null, this._getValue(this.memoized))
+  } else {
+    this.listeners[type].push(fn)
   }
 }
 
 Task.prototype.then = function (fn, errorFn) {
-  if (_.isFn(fn)) {
-    if (this.memoized) {
-      if (this.memoized.type === 'run:success')
-        fn.call(this, this._getValue(this.memoized))
-    } else {
-      this.listeners.success.push(fn)
-    }
-  }
-  if (_.isFn(errorFn)) { this['catch'](errorFn) }
+  if (_.isFn(fn)) this._addHandler('success', fn)
+  if (_.isFn(errorFn)) this['catch'](errorFn)
   return this
 }
 
 Task.prototype['catch'] = function (fn) {
-  if (_.isFn(fn)) {
-    if (this.memoized) {
-      if (this.memoized.type === 'run:error')
-        fn.call(this, this._getValue(this.memoized))
-    } else {
-      this.listeners.error.push(fn)
-    }
-  }
+  if (_.isFn(fn)) this._addHandler('error', fn)
   return this
 }
 
 Task.prototype['finally'] = function (fn) {
   if (_.isFn(fn)) {
-    if (this.memoized) {
-      fn.call(this, this._getValue(this.memoized))
-    } else {
+    if (this.memoized)
+      fn.call(null, this._getValue(this.memoized))
+    else
       this.listeners.end.push(fn)
-    }
   }
   return this
 }
@@ -400,8 +363,42 @@ Task.prototype.flushed = function () {
   return !this.thread && !this.worker
 }
 
+Task.prototype._send = function (env, fn, args) {
+  this.worker.postMessage({
+    id: this.id,
+    type: 'run',
+    env: env,
+    src: fn.toString(),
+    args: args
+  })
+}
+
+Task.prototype._checkInterval = function (maxDelay) {
+  var self = this, now = _.now()
+  self._timer = setInterval(function () {
+    if (self.memoized) {
+      clearTimer(self)
+    } else {
+      checkTaskDelay(self, now, maxDelay)
+    }
+  }, Task.intervalCheckTime)
+}
+
 Task.create = function (thread) {
   return new Task(thread)
+}
+
+function dispatcher(self, value) {
+  return function recur(pool) {
+    var fn = null
+    if (_.isArr(pool)) {
+      fn = pool.shift()
+      if (fn) {
+        fn.call(null, value)
+        if (pool.length) recur(pool)
+      }
+    }
+  }
 }
 
 function createError(data) {
@@ -411,21 +408,23 @@ function createError(data) {
   return err
 }
 
-function initInterval(maxDelay, self) {
-  var error, now = _.now()
-  self._timer = setInterval(function () {
-    if (self.memoized) {
-      clearTimer(self)
-    } else {
-      if ((_.now() - now) > maxDelay) {
-        error = new Error('maximum task execution time exceeded')
-        self.memoized = { type: 'run:error', error: error }
-        self._trigger(error, 'error')
-        self._trigger(error, 'end')
-        clearTimer(self)
-      }
-    }
-  }, Task.intervalCheckTime)
+function cleanTask(thread, task) {
+  return function () {
+    var index = thread._tasks.indexOf(task)
+    thread._latestTask = _.now()
+    if (index >= 0) thread._tasks.splice(index, 1)
+  }
+}
+
+function checkTaskDelay(self, now, maxDelay) {
+  var error = null
+  if ((_.now() - now) > maxDelay) {
+    error = new Error('maximum task execution time exceeded')
+    self.memoized = { type: 'run:error', error: error }
+    self._trigger(error, 'error')
+    self._trigger(error, 'end')
+    clearTimer(self)
+  }
 }
 
 function clearTimer(self) {
@@ -433,19 +432,20 @@ function clearTimer(self) {
   self._timer = null
 }
 
+function isValidEvent(type) {
+  return type === 'run:error' || type === 'run:success'
+}
+
 function onMessage(self) {
   return function handler(ev) {
-    var data = ev.data
-    var type = data.type
-
+    var value, data = ev.data
     if (data && data.id === self.id) {
-      if (type === 'run:error' || type === 'run:success') {
+      if (isValidEvent(data.type)) {
         self.worker.removeEventListener('message', handler)
-        self.memoized = ev.data
-
-        data = self._getValue(data)
-        self._trigger(data, type.split(':')[1])
-        self._trigger(data, 'end')
+        self.memoized = data
+        value = self._getValue(data)
+        self._trigger(value, data.type.split(':')[1])
+        self._trigger(value, 'end')
       }
     }
   }

@@ -24,20 +24,20 @@ store.total = function () {
   return buf.length
 }
 
-store.running = function () {
-  var running = []
+function getByStatus(type) {
+  var typeBuf = []
   _.each(buf, function (thread) {
-    if (thread.running()) running.push(thread)
+    if (thread[type]()) typeBuf.push(thread)
   })
-  return running
+  return typeBuf
+}
+
+store.running = function () {
+  return getByStatus('running')
 }
 
 store.idle = function () {
-  var idle = []
-  _.each(buf, function (thread) {
-    if (thread.idle()) idle.push(thread)
-  })
-  return idle
+  return getByStatus('idle')
 }
 
 store.killAll = function () {
