@@ -3,7 +3,7 @@ var _ = require('./utils')
 module.exports = Task
 
 function Task(thread, env) {
-  this.id = _.generateUUID()
+  this.id = _.uuid()
   this.thread = thread
   this.worker = thread.worker
   this.env = env || {}
@@ -44,6 +44,8 @@ Task.prototype.run = Task.prototype.exec = function (fn, env, args) {
     args = env
     env = null
   }
+  if (_.isObj(arguments[2]))
+    env = arguments[2]
 
   env = _.serializeMap(_.extend({}, this.env, env))
   this.memoized = null

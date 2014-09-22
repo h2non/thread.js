@@ -12,8 +12,8 @@ var BlobBuilder = window.BlobBuilder || window.WebKitBlobBuilder || window.MozBl
 module.exports = Thread
 
 function Thread(options) {
+  this.id = _.uuid()
   this.terminated = false
-  this.id = _.generateUUID()
   this.options = {}
   this._tasks = []
   this._latestTask = 0
@@ -47,11 +47,10 @@ Thread.prototype._create = function () {
     blob = URL.createObjectURL(blob)
   }
 
-  if (hasWorkers && URL) {
+  if (hasWorkers && URL)
     this.worker = new Worker(blob)
-  } else {
+  else
     this.worker = new FakeWorker(this.id)
-  }
 
   store.push(this)
 
@@ -142,8 +141,6 @@ Thread.prototype.pool = function (num) {
   return pool(num || 2, this)
 }
 
-pool.Thread = Thread
-
 Thread.prototype.terminate = Thread.prototype.kill = function () {
   if (!this.terminated) {
     this.options = {}
@@ -178,9 +175,7 @@ Thread.prototype.idle = Thread.prototype.sleep = function () {
 }
 
 Thread.prototype.on = Thread.prototype.addEventListener = function (type, fn) {
-  if (this.worker) {
-    this.worker.addEventListener(type, fn)
-  }
+  if (this.worker) this.worker.addEventListener(type, fn)
   return this
 }
 
@@ -194,5 +189,7 @@ Thread.prototype.off = Thread.prototype.removeEventListener = function (type, fn
 Thread.prototype.toString = function () {
   return '[object Thread]'
 }
+
+pool.Thread = Thread
 
 Thread.Task = Task

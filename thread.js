@@ -267,7 +267,7 @@ var _ = require('./utils')
 module.exports = Task
 
 function Task(thread, env) {
-  this.id = _.generateUUID()
+  this.id = _.uuid()
   this.thread = thread
   this.worker = thread.worker
   this.env = env || {}
@@ -308,6 +308,8 @@ Task.prototype.run = Task.prototype.exec = function (fn, env, args) {
     args = env
     env = null
   }
+  if (_.isObj(arguments[2]))
+    env = arguments[2]
 
   env = _.serializeMap(_.extend({}, this.env, env))
   this.memoized = null
@@ -466,8 +468,8 @@ var BlobBuilder = window.BlobBuilder || window.WebKitBlobBuilder || window.MozBl
 module.exports = Thread
 
 function Thread(options) {
+  this.id = _.uuid()
   this.terminated = false
-  this.id = _.generateUUID()
   this.options = {}
   this._tasks = []
   this._latestTask = 0
@@ -501,11 +503,10 @@ Thread.prototype._create = function () {
     blob = URL.createObjectURL(blob)
   }
 
-  if (hasWorkers && URL) {
+  if (hasWorkers && URL)
     this.worker = new Worker(blob)
-  } else {
+  else
     this.worker = new FakeWorker(this.id)
-  }
 
   store.push(this)
 
@@ -596,8 +597,6 @@ Thread.prototype.pool = function (num) {
   return pool(num || 2, this)
 }
 
-pool.Thread = Thread
-
 Thread.prototype.terminate = Thread.prototype.kill = function () {
   if (!this.terminated) {
     this.options = {}
@@ -632,9 +631,7 @@ Thread.prototype.idle = Thread.prototype.sleep = function () {
 }
 
 Thread.prototype.on = Thread.prototype.addEventListener = function (type, fn) {
-  if (this.worker) {
-    this.worker.addEventListener(type, fn)
-  }
+  if (this.worker) this.worker.addEventListener(type, fn)
   return this
 }
 
@@ -648,6 +645,8 @@ Thread.prototype.off = Thread.prototype.removeEventListener = function (type, fn
 Thread.prototype.toString = function () {
   return '[object Thread]'
 }
+
+pool.Thread = Thread
 
 Thread.Task = Task
 
@@ -680,29 +679,22 @@ exports.defer = function (fn) {
   setTimeout(fn, 1)
 }
 
-exports.bind = function (ctx, fn) {
-  return function () { fn.apply(ctx, arguments) }
-}
-
 exports.each = function (obj, fn) {
   var i, l
-  if (_.isArr(obj)) {
-    for (i = 0, l = obj.length; i < l; i += 1) {
-      fn(obj[i], i)
-    }
-  } else if (_.isObj(obj)) {
-    for (i in obj) if (obj.hasOwnProperty(i)) {
-      fn(obj[i], i)
-    }
-  }
+  if (_.isArr(obj))
+    for (i = 0, l = obj.length; i < l; i += 1) fn(obj[i], i)
+  else if (_.isObj(obj))
+    for (i in obj) if (obj.hasOwnProperty(i)) fn(obj[i], i)
 }
 
 exports.extend = function (target) {
   var args = _.toArr(arguments).slice(1)
   _.each(args, function (obj) {
-    _.each(obj, function (value, key) {
-      target[key] = value
-    })
+    if (_.isObj(obj)) {
+      _.each(obj, function (value, key) {
+        target[key] = value
+      })
+    }
   })
   return target
 }
@@ -727,13 +719,13 @@ exports.serializeMap = function (obj) {
   return obj
 }
 
-exports.generateUUID = function () {
-  var d = new Date().getTime()
-  var uuid = 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function (c) {
-    var r = (d + Math.random() * 16) % 16 | 0
-    d = Math.floor(d / 16)
-    return (c == 'x' ? r : (r & 0x7 | 0x8)).toString(16)
-  })
+exports.uuid = function () {
+  var uuid = '', i, random
+  for (i = 0; i < 32; i++) {
+    random = Math.random() * 16 | 0;
+    if (i === 8 || i === 12 || i === 16 || i === 20) uuid += '-'
+    uuid += (i === 12 ? 4 : (i === 16 ? (random & 3 | 8) : random)).toString(16)
+  }
   return uuid
 }
 
