@@ -1,6 +1,6 @@
 # thread.js [![Build Status](https://api.travis-ci.org/h2non/thread.js.svg?branch=master)][travis] [![Stories in Ready](https://badge.waffle.io/h2non/thread.js.png?label=ready&title=Ready)](https://waffle.io/h2non/thread.js) [![Code Climate](https://codeclimate.com/github/h2non/thread.js/badges/gpa.svg)](https://codeclimate.com/github/h2non/thread.js) [![Gitter chat](https://badges.gitter.im/h2non/thread.js.png)](https://gitter.im/h2non/thread.js)
 
-**thread.js** is lightweight and rich featured library that **simplifies JavaScript parallel computing in browser**
+**thread.js** is lightweight and rich feature library that **simplifies JavaScript parallel computing in browser**
 environments through a clean and elegant [API](#api) with promise-based asynchronous handling
 
 It allows you to run tasks in a non-blocking real thread in a really simple way.
