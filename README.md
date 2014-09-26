@@ -104,19 +104,19 @@ task.then(function (array) {
 
 You should be aware of some limitations while using threads
 
-Threads has it's own isolated scope. That means you must explicitly bind values or functions
-to the thread in order to consum them.
+Threads has its own isolated scope. That's means you must explicitly bind values or functions
+to the thread in order to consum them from the isolated scope.
 Any passed value to the thread scope will be cloned (it will be passed by value, not by reference),
 so mutation is not possible between scopes
 
 If you create a pool of threads, you must consider that threads in the pool are scope-isolated too.
 In other words, it's not supported scope synchronization between threads in the pool.
-That is positive becouse you cannot have side-effects between threads,
+That could be positive because you cannot have side-effects between threads,
 but should be aware about global scope dependencies and mutation in your code in other to avoid inconsistency between threads
 
-All values passed to must be JSON-serializable, meaning only primitives types, raw objects and functions.
+All values binded to the thread must be JSON-serializable, meaning only primitives types, raw objects and functions.
 Same with return values from threads.
-DOM nodes, built-in objects or functions and prototypes chains cannot be passed to the thread
+DOM nodes, built-in objects, native functions and prototypes chains cannot be passed to the thread
 
 Additionally, threads do not have access to the DOM API
 
