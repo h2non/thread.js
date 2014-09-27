@@ -20,7 +20,7 @@
       })
 
       // returning an error
-      var task2 = worker.run(function (done) {
+      var task2 = worker.run(function () {
         if (env.error)
           return new Error('invalid')
       })
@@ -28,6 +28,7 @@
       task2.catch(function (err) {
         console.log('Error:', err)
       })
+
     </script>
   </body>
 </html>
