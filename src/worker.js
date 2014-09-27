@@ -10,6 +10,7 @@ function worker() {
   }
 
   (function isolated() {
+    'use strict'
     var namespace = 'env'
     var isWorker = self.document === undefined
     var toStr = Object.prototype.toString
@@ -189,6 +190,7 @@ function worker() {
     }
 
     function process(msg) {
+      var result = null
       var args = msg.args || []
       var fn = $$evalExpr(msg.src)
       var ctx = isObj(msg.env) ? mapFields(msg.env) : self[namespace]
@@ -197,8 +199,12 @@ function worker() {
         args.push(done(msg))
         fn.apply(ctx, args)
       } else {
-        fn = fn.apply(ctx, args)
-        sendSuccess(msg, fn)
+        result = fn.apply(ctx, args)
+        if (result && result instanceof Error) {
+          sendError(msg, result)
+        } else {
+          sendSuccess(msg, result)
+        }
       }
     }
 
@@ -258,6 +264,5 @@ function worker() {
 
     self.addEventListener(messageEvent, onMessage)
     self.addEventListener('error', function (err) { throw err })
-
   })()
 }

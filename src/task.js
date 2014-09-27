@@ -19,7 +19,7 @@ Task.prototype._getValue = function (data) {
 }
 
 Task.prototype._trigger = function (value, type) {
-  if (typeof this._timer === 'number') clearTimer(this)
+  if (typeof this._timer === 'number') clearTimer.call(this)
   dispatcher(this, value)(this.listeners[type])
 }
 
@@ -113,9 +113,9 @@ Task.prototype._checkInterval = function (maxDelay) {
   var self = this, now = _.now()
   self._timer = setInterval(function () {
     if (self.memoized) {
-      clearTimer(self)
+      clearTimer.call(self)
     } else {
-      checkTaskDelay(self, now, maxDelay)
+      checkTaskDelay.call(self, now, maxDelay)
     }
   }, Task.intervalCheckTime)
 }
@@ -152,20 +152,20 @@ function cleanTask(thread, task) {
   }
 }
 
-function checkTaskDelay(self, now, maxDelay) {
+function checkTaskDelay(now, maxDelay) {
   var error = null
   if ((_.now() - now) > maxDelay) {
     error = new Error('maximum task execution time exceeded')
-    self.memoized = { type: 'run:error', error: error }
-    self._trigger(error, 'error')
-    self._trigger(error, 'end')
-    clearTimer(self)
+    this.memoized = { type: 'run:error', error: error }
+    this._trigger(error, 'error')
+    this._trigger(error, 'end')
+    clearTimer.call(this)
   }
 }
 
-function clearTimer(self) {
-  clearInterval(self._timer)
-  self._timer = null
+function clearTimer() {
+  clearInterval(this._timer)
+  this._timer = null
 }
 
 function isValidEvent(type) {

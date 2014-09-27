@@ -281,7 +281,7 @@ Task.prototype._getValue = function (data) {
 }
 
 Task.prototype._trigger = function (value, type) {
-  if (typeof this._timer === 'number') clearTimer(this)
+  if (typeof this._timer === 'number') clearTimer.call(this)
   dispatcher(this, value)(this.listeners[type])
 }
 
@@ -375,9 +375,9 @@ Task.prototype._checkInterval = function (maxDelay) {
   var self = this, now = _.now()
   self._timer = setInterval(function () {
     if (self.memoized) {
-      clearTimer(self)
+      clearTimer.call(self)
     } else {
-      checkTaskDelay(self, now, maxDelay)
+      checkTaskDelay.call(self, now, maxDelay)
     }
   }, Task.intervalCheckTime)
 }
@@ -414,20 +414,20 @@ function cleanTask(thread, task) {
   }
 }
 
-function checkTaskDelay(self, now, maxDelay) {
+function checkTaskDelay(now, maxDelay) {
   var error = null
   if ((_.now() - now) > maxDelay) {
     error = new Error('maximum task execution time exceeded')
-    self.memoized = { type: 'run:error', error: error }
-    self._trigger(error, 'error')
-    self._trigger(error, 'end')
-    clearTimer(self)
+    this.memoized = { type: 'run:error', error: error }
+    this._trigger(error, 'error')
+    this._trigger(error, 'end')
+    clearTimer.call(this)
   }
 }
 
-function clearTimer(self) {
-  clearInterval(self._timer)
-  self._timer = null
+function clearTimer() {
+  clearInterval(this._timer)
+  this._timer = null
 }
 
 function isValidEvent(type) {
@@ -486,25 +486,12 @@ Thread.prototype._setOptions = function (options) {
 }
 
 Thread.prototype._create = function () {
-  var blob, src = _.getSource(workerSrc)
-
-  if (URL) {
-    try {
-      blob = new Blob([src], { type: 'text/javascript' })
-    } catch (e) {
-      blob = new BlobBuilder()
-      blob.append(src)
-      blob = blob.getBlob()
-    }
-    blob = URL.createObjectURL(blob)
-  }
+  var src = _.getSource(workerSrc)
 
   if (hasWorkers && URL)
-    this.worker = new Worker(blob)
+    this.worker = new Worker(createBlob(src))
   else
     this.worker = new FakeWorker(this.id)
-
-  store.push(this)
 
   this.send(_.extend({ type: 'start' }, {
     env: _.serializeMap(this.options.env),
@@ -512,15 +499,36 @@ Thread.prototype._create = function () {
   }))
   this.worker.addEventListener('error', function (e) { throw e })
   this.require(this.options.require)
+  store.push(this)
 
   return this
+}
+
+Thread.prototype.run = Thread.prototype.exec = function (fn, env, args) {
+  var task
+
+  if (_.isArr(env)) {
+    args = env
+    env = arguments[2]
+  }
+  if (fn && fn instanceof Task) {
+    task = fn
+  } else {
+    if (!_.isFn(fn)) throw new TypeError('first argument must be a function')
+    task = new Task(this)
+  }
+
+  this._tasks.push(task)
+  _.defer(function () { task.run(fn, env, args) })
+
+  return task
 }
 
 Thread.prototype.require = Thread.prototype['import'] = function (name, fn) {
   if (_.isFn(name)) {
     fn = name
     name = _.fnName(fn)
-    if (!name) { throw new Error('Function must have a name') }
+    if (!name) throw new Error('function must be named')
     this.send({ type: 'require:fn', src: fn.toString(), name: _.fnName(fn) })
   } else if (typeof name === 'string') {
     if (_.isFn(fn)) {
@@ -536,32 +544,6 @@ Thread.prototype.require = Thread.prototype['import'] = function (name, fn) {
     this.send({ type: 'require:map', src: _.serializeMap(name) })
   }
   return this
-}
-
-Thread.prototype.run = Thread.prototype.exec = function (fn, env, args) {
-  var task, index, self = this
-  var tasks = self._tasks
-
-  if (_.isArr(fn)) {
-    args = fn
-    fn = arguments[1]
-  }
-  if (_.isArr(env)) {
-    args = env
-    env = arguments[2]
-  }
-
-  if (fn instanceof Task) {
-    task = fn
-  } else {
-    if (!_.isFn(fn)) throw new TypeError('missing function argument')
-    task = new Task(this)
-  }
-
-  this._tasks.push(task)
-  _.defer(function () { task.run(fn, env, args) })
-
-  return task
 }
 
 Thread.prototype.bind = Thread.prototype.set = function (env) {
@@ -640,6 +622,18 @@ Thread.prototype.off = Thread.prototype.removeEventListener = function (type, fn
 
 Thread.prototype.toString = function () {
   return '[object Thread]'
+}
+
+function createBlob(src) {
+  var blob = null
+  try {
+    blob = new Blob([src], { type: 'text/javascript' })
+  } catch (e) {
+    blob = new BlobBuilder()
+    blob.append(src)
+    blob = blob.getBlob()
+  }
+  return URL.createObjectURL(blob)
 }
 
 pool.Thread = Thread
@@ -739,6 +733,7 @@ function worker() {
   }
 
   (function isolated() {
+    'use strict'
     var namespace = 'env'
     var isWorker = self.document === undefined
     var toStr = Object.prototype.toString
@@ -918,6 +913,7 @@ function worker() {
     }
 
     function process(msg) {
+      var result = null
       var args = msg.args || []
       var fn = $$evalExpr(msg.src)
       var ctx = isObj(msg.env) ? mapFields(msg.env) : self[namespace]
@@ -926,8 +922,12 @@ function worker() {
         args.push(done(msg))
         fn.apply(ctx, args)
       } else {
-        fn = fn.apply(ctx, args)
-        sendSuccess(msg, fn)
+        result = fn.apply(ctx, args)
+        if (result && result instanceof Error) {
+          sendError(msg, result)
+        } else {
+          sendSuccess(msg, result)
+        }
       }
     }
 
@@ -987,7 +987,6 @@ function worker() {
 
     self.addEventListener(messageEvent, onMessage)
     self.addEventListener('error', function (err) { throw err })
-
   })()
 }
 
