@@ -9,12 +9,23 @@
         env: { error: true }
       })
 
+      // throwing an error
       var task = worker.run(function (done) {
         if (env.error)
           throw new Error('invalid')
       })
 
       task.catch(function (err) {
+        console.log('Error:', err)
+      })
+
+      // returning an error
+      var task2 = worker.run(function (done) {
+        if (env.error)
+          return new Error('invalid')
+      })
+
+      task2.catch(function (err) {
         console.log('Error:', err)
       })
     </script>
