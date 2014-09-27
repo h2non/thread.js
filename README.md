@@ -10,7 +10,7 @@ task load across multiple workers transparently using a simple best availability
 It uses [Web Workers](http://en.wikipedia.org/wiki/Web_worker) to create real threads,
 but provides fallback support for older browsers based on an `iframe` hack
 
-Welcome to the multithreading world in the browser, now made simple and funny
+Welcome to the multithreading world in the browser, now made simple, funny and tiny (5KB gzipped)
 
 Getting started with [basic usage](#basic-usage),
 some [examples](https://github.com/h2non/thread.js/tree/master/examples) or [tests](https://github.com/h2non/thread.js/tree/master/test) and be aware about [threads limitations](#threads-limitations)
