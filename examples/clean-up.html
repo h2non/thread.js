@@ -1,0 +1,28 @@
+<html>
+  <head>
+    <meta charset="utf-8">
+  </head>
+  <body>
+    <script src="../thread.js"></script>
+    <script>
+      var worker = thread({
+        env: { error: true }
+      })
+
+      worker.run(function (done) {
+        // do something
+        setTimeout(done, 50)
+      }).catch(function (err) {
+        console.log('Error:', err)
+      })
+
+      // clean up
+      worker.flush()
+      // check it
+      worker.flushed() // -> true
+      // optionally, kill it
+      worker.kill()
+
+    </script>
+  </body>
+</html>
