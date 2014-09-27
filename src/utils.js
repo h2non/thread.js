@@ -1,6 +1,7 @@
 var _ = exports
 var toStr = Object.prototype.toString
 var slice = Array.prototype.slice
+var hasOwn = Object.prototype.hasOwnProperty
 var isArrayNative = Array.isArray
 
 exports.now = function () {
@@ -32,7 +33,7 @@ exports.each = function (obj, fn) {
   if (_.isArr(obj))
     for (i = 0, l = obj.length; i < l; i += 1) fn(obj[i], i)
   else if (_.isObj(obj))
-    for (i in obj) if (obj.hasOwnProperty(i)) fn(obj[i], i)
+    for (i in obj) if (hasOwn.call(obj, i)) fn(obj[i], i)
 }
 
 exports.extend = function (target) {
