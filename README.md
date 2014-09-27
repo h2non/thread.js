@@ -28,7 +28,7 @@ component install h2non/thread.js
 
 Or loading the script remotely
 ```html
-<script src="//cdn.rawgit.com/h2non/thread.js/0.1.4/thread.js"></script>
+<script src="//cdn.rawgit.com/h2non/thread.js/0.1.5/thread.js"></script>
 ```
 
 ## Environments
@@ -562,10 +562,15 @@ Return `true` if task data was already flushed
 
 ### Static members
 
+#### thread.all()
+Return: `array`
+
+Return an array of created threads (running and idle)
+
 #### thread.total()
 Return: `number`
 
-Return the total number of threads created (running and idle)
+Return the total number of created threads  (running and idle)
 
 #### thread.all()
 Return: `array`

@@ -114,11 +114,12 @@ function ThreadFactory(options) {
   return new Thread(options)
 }
 
-ThreadFactory.VERSION = '0.1.4'
+ThreadFactory.VERSION = '0.1.5'
 ThreadFactory.create = ThreadFactory
 ThreadFactory.Task = Thread.Task
 ThreadFactory.Thread = Thread
 
+ThreadFactory.total = store.all
 ThreadFactory.total = store.total
 ThreadFactory.running = store.running
 ThreadFactory.idle = store.idle
