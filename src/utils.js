@@ -4,31 +4,31 @@ var slice = Array.prototype.slice
 var hasOwn = Object.prototype.hasOwnProperty
 var isArrayNative = Array.isArray
 
-exports.now = function () {
+_.now = function () {
   return new Date().getTime()
 }
 
-exports.isFn = function (obj) {
+_.isFn = function (obj) {
   return typeof obj === 'function'
 }
 
-exports.isObj = function (o) {
+_.isObj = function (o) {
   return o && toStr.call(o) === '[object Object]'
 }
 
-exports.isArr = function (o) {
+_.isArr = function (o) {
   return o && isArrayNative ? isArrayNative(o) : toStr.call(o) === '[object Array]'
 }
 
-exports.toArr = function (args) {
+_.toArr = function (args) {
   return slice.call(args)
 }
 
-exports.defer = function (fn) {
+_.defer = function (fn) {
   setTimeout(fn, 1)
 }
 
-exports.each = function (obj, fn) {
+_.each = function (obj, fn) {
   var i, l
   if (_.isArr(obj))
     for (i = 0, l = obj.length; i < l; i += 1) fn(obj[i], i)
@@ -36,7 +36,7 @@ exports.each = function (obj, fn) {
     for (i in obj) if (hasOwn.call(obj, i)) fn(obj[i], i)
 }
 
-exports.extend = function (target) {
+_.extend = function (target) {
   var args = _.toArr(arguments).slice(1)
   _.each(args, function (obj) {
     if (_.isObj(obj)) {
@@ -48,15 +48,15 @@ exports.extend = function (target) {
   return target
 }
 
-exports.getSource = function (fn) {
+_.getSource = function (fn) {
   return '(' + fn.toString() + ').call(this)'
 }
 
-exports.fnName = function (fn) {
+_.fnName = function (fn) {
   return fn.name || (fn = /\W*function\s+([\w\$]+)\(/.exec(fn.toString()) ? fn[1] : '')
 }
 
-exports.serializeMap = function (obj) {
+_.serializeMap = function (obj) {
   if (_.isObj(obj)) {
     _.each(obj, function (fn, key) {
       if (_.isFn(fn)) {
@@ -68,7 +68,7 @@ exports.serializeMap = function (obj) {
   return obj
 }
 
-exports.uuid = function () {
+_.uuid = function () {
   var uuid = '', i, random
   for (i = 0; i < 32; i++) {
     random = Math.random() * 16 | 0;
