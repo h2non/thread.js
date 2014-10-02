@@ -200,7 +200,7 @@ function worker() {
         fn.apply(ctx, args)
       } else {
         result = fn.apply(ctx, args)
-        if (result && result instanceof Error) {
+        if (result instanceof Error) {
           sendError(msg, result)
         } else {
           sendSuccess(msg, result)
