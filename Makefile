@@ -33,7 +33,7 @@ browserify:
 	$(BROWSERIFY) \
 		--exports require \
 		--standalone thread \
-		--entry ./src/main.js >> ./thread.js
+		--entry ./src/index.js >> ./thread.js
 
 uglify:
 	$(UGLIFYJS) thread.js --mangle --preamble $(BANNER) --source-map thread.min.js.map > thread.min.js
