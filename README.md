@@ -104,10 +104,11 @@ task.then(function (array) {
 
 You should be aware of some limitations while using threads
 
-Threads has its own isolated scope. That's means you must explicitly bind values or functions
-to the thread in order to consum them from the isolated scope.
+Threads has its own isolated scope, so that means each thread has its own memory space. 
+That's means you must explicitly bind values or functions
+to the thread in order to consum them inside the thread scope.
 Any passed value to the thread scope will be cloned (it will be passed by value, not by reference),
-so mutation is not possible between scopes
+so mutation is not possible between scopes since memory space has no synchronization
 
 If you create a pool of threads, you must consider that threads in the pool are scope-isolated too.
 In other words, it's not supported scope synchronization between threads in the pool.
