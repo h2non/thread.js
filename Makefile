@@ -1,7 +1,8 @@
+VERSION = 0.1.6
 BROWSERIFY = node ./node_modules/browserify/bin/cmd.js
 MOCHA = ./node_modules/.bin/mocha
 UGLIFYJS = ./node_modules/.bin/uglifyjs
-BANNER = "/*! thread.js - v0.1 - MIT License - https://github.com/h2non/thread.js */"
+BANNER = "/*! thread.js - v$(VERSION) - MIT License - https://github.com/h2non/thread.js */"
 MOCHA_PHANTOM = ./node_modules/.bin/mocha-phantomjs
 KARMA = ./node_modules/karma/bin/karma
 
@@ -36,7 +37,7 @@ browserify:
 		--entry ./src/index.js >> ./thread.js
 
 uglify:
-	$(UGLIFYJS) thread.js --mangle --preamble $(BANNER) --source-map thread.min.js.map > thread.min.js
+	$(UGLIFYJS) thread.js --mangle --preamble $(BANNER) --source-map thread.min.js.map --source-map-url http://cdn.rawgit.com/h2non/thread.js/$(VERSION)/thread.min.js.map > thread.min.js
 
 mocha:
 	$(MOCHA_PHANTOM) --reporter spec --ui bdd test/runner.html
