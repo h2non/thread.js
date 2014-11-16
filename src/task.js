@@ -35,24 +35,26 @@ Task.prototype.bind = Task.prototype.set = function (env) {
 Task.prototype.run = Task.prototype.exec = function (fn, env, args) {
   var thread = this.thread
 
-  if (thread._terminated)
-    throw new Error('cannot execute the task, the thread was terminated')
-  if (!_.isFn(fn))
+  if (thread._terminated) {
+    throw new Error('cannot execute the task. The thread is terminated')
+  }
+  if (!_.isFn(fn)) {
     throw new TypeError('first argument must be a function')
+  }
 
-  if (_.isArr(arguments[1]))
-    args = arguments[1]
-  if (_.isObj(arguments[2]))
-    env = arguments[2]
+  if (_.isArr(arguments[1])) args = arguments[1]
+  if (_.isObj(arguments[2])) env = arguments[2]
 
   env = _.serializeMap(_.extend({}, this.env, env))
   this.memoized = null
   this.time = _.now()
 
-  if (thread.maxTaskDelay >= Task.intervalCheckTime)
+  if (thread.maxTaskDelay >= Task.intervalCheckTime) {
     this._checkInterval(thread.maxTaskDelay)
-  if (thread._tasks.indexOf(this) === -1)
+  }
+  if (thread._tasks.indexOf(this) === -1) {
     thread._tasks.push(this)
+  }
 
   this['finally'](cleanTask(thread, this))
   this._send(env, fn, args)
