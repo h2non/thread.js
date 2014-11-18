@@ -21,7 +21,7 @@ Via [Bower](http://bower.io)
 ```bash
 bower install thread
 ```
-Via [Component](http://component.io/)
+Via [Component](https://github.com/component/component)
 ```bash
 component install h2non/thread.js
 ```
