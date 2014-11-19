@@ -9,23 +9,10 @@ function Task(thread, env) {
   this.env = env || {}
   this.time = this.memoized = null
   this.listeners = { error: [], success: [], end: [] }
-  this._subscribe()
+  addWorkerMessageListener(this)
 }
 
 Task.intervalCheckTime = 200
-
-Task.prototype._getValue = function (data) {
-  return data.type === 'run:error' ? createError(data) : data.value
-}
-
-Task.prototype._trigger = function (value, type) {
-  if (typeof this._timer === 'number') clearTimer.call(this)
-  dispatcher(this, value)(this.listeners[type])
-}
-
-Task.prototype._subscribe = function () {
-  this.worker.addEventListener('message', onMessage(this))
-}
 
 Task.prototype.bind = Task.prototype.set = function (env) {
   _.extend(this.env, env)
@@ -62,30 +49,21 @@ Task.prototype.run = Task.prototype.exec = function (fn, env, args) {
   return this
 }
 
-Task.prototype._addHandler = function (type, fn) {
-  if (this.memoized) {
-    if (this.memoized.type === ('run:' + type))
-      fn.call(null, this._getValue(this.memoized))
-  } else {
-    this.listeners[type].push(fn)
-  }
-}
-
 Task.prototype.then = function (fn, errorFn) {
-  if (_.isFn(fn)) this._addHandler('success', fn)
+  if (_.isFn(fn)) addHandler.call(this, 'success', fn)
   if (_.isFn(errorFn)) this['catch'](errorFn)
   return this
 }
 
 Task.prototype['catch'] = function (fn) {
-  if (_.isFn(fn)) this._addHandler('error', fn)
+  if (_.isFn(fn)) addHandler.call(this, 'error', fn)
   return this
 }
 
 Task.prototype['finally'] = function (fn) {
   if (_.isFn(fn)) {
     if (this.memoized)
-      fn.call(null, this._getValue(this.memoized))
+      fn.call(null, getValue(this.memoized))
     else
       this.listeners.end.push(fn)
   }
@@ -126,6 +104,24 @@ Task.create = function (thread) {
   return new Task(thread)
 }
 
+function addWorkerMessageListener(task) {
+  task.worker.addEventListener('message', onMessage(task))
+}
+
+function addHandler(type, fn) {
+  if (this.memoized) {
+    if (this.memoized.type === ('run:' + type))
+      fn.call(null, getValue(this.memoized))
+  } else {
+    this.listeners[type].push(fn)
+  }
+}
+
+function dispathEvent(task, value, type) {
+  if (typeof task._timer === 'number') clearTimer.call(task)
+  dispatcher(task, value)(task.listeners[type])
+}
+
 function dispatcher(self, value) {
   return function recur(pool) {
     var fn = null
@@ -154,13 +150,13 @@ function cleanTask(thread, task) {
   }
 }
 
-function checkTaskDelay(now, maxDelay) {
+function checkTaskDelay(time, maxDelay) {
   var error = null
-  if ((_.now() - now) > maxDelay) {
+  if ((_.now() - time) > maxDelay) {
     error = new Error('maximum task execution time exceeded')
     this.memoized = { type: 'run:error', error: error }
-    this._trigger(error, 'error')
-    this._trigger(error, 'end')
+    dispathEvent(this, error, 'error')
+    dispathEvent(this, error, 'end')
     clearTimer.call(this)
   }
 }
@@ -174,17 +170,25 @@ function isValidEvent(type) {
   return type === 'run:error' || type === 'run:success'
 }
 
-function onMessage(self) {
+function onMessage(task) {
   return function handler(ev) {
-    var value, data = ev.data
-    if (data && data.id === self.id) {
-      if (isValidEvent(data.type)) {
-        self.worker.removeEventListener('message', handler)
-        self.memoized = data
-        value = self._getValue(data)
-        self._trigger(value, data.type.split(':')[1])
-        self._trigger(value, 'end')
-      }
+    var data = ev.data
+    if (data && data.id === task.id && isValidEvent(data.type)) {
+      task.worker.removeEventListener('message', handler)
+      task.memoized = data
+      triggerMessage(task, data)
     }
   }
+}
+
+function triggerMessage(task, data) {
+  var value = getValue(data)
+  dispathEvent(task, value, data.type.split(':')[1])
+  dispathEvent(task, value, 'end')
+}
+
+function getValue(data) {
+  return data.type === 'run:error'
+    ? createError(data)
+    : data.value
 }

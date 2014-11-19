@@ -11,13 +11,13 @@ module.exports = function(config) {
     frameworks: ['mocha'],
     browsers: [
       'Chrome',
-      'ChromeCanary',
-      'Firefox',
-      'PhantomJS',
-      'Opera',
-      'Safari'
+//      'ChromeCanary',
+//      'Firefox',
+//      'PhantomJS',
+//      'Opera',
+//      'Safari'
     ],
     reports: ['progress'],
-    singleRun: true
+    singleRun: false 
   })
 }
