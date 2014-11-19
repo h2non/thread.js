@@ -20,7 +20,7 @@ describe('task', function () {
       task.then(function (value) {
         expect(value).to.be.equal(8)
         done()
-      }).catch(function () { done() })
+      })
     })
   })
 

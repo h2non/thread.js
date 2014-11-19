@@ -5,7 +5,7 @@
   "author": "Tomas Aparicio",
   "license": "MIT",
   "scripts": {
-    "test": "make test"
+    "test": "make test && make karma-ci"
   },
   "devDependencies": {
     "browserify": "^5.9.1",

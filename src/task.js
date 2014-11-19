@@ -9,7 +9,6 @@ function Task(thread, env) {
   this.env = env || {}
   this.time = this.memoized = null
   this.listeners = { error: [], success: [], end: [] }
-  addWorkerMessageListener(this)
 }
 
 Task.intervalCheckTime = 200
@@ -23,7 +22,7 @@ Task.prototype.run = Task.prototype.exec = function (fn, env, args) {
   var thread = this.thread
 
   if (thread._terminated) {
-    throw new Error('cannot execute the task. The thread is terminated')
+    throw new Error('cannot execute the task. The thread was terminated')
   }
   if (!_.isFn(fn)) {
     throw new TypeError('first argument must be a function')
@@ -37,26 +36,28 @@ Task.prototype.run = Task.prototype.exec = function (fn, env, args) {
   this.time = _.now()
 
   if (thread.maxTaskDelay >= Task.intervalCheckTime) {
-    this._checkInterval(thread.maxTaskDelay)
+    checkInterval(this, thread.maxTaskDelay)
   }
   if (thread._tasks.indexOf(this) === -1) {
     thread._tasks.push(this)
   }
 
   this['finally'](cleanTask(thread, this))
+
+  addWorkerMessageListener(this)
   this._send(env, fn, args)
 
   return this
 }
 
 Task.prototype.then = function (fn, errorFn) {
-  if (_.isFn(fn)) addHandler.call(this, 'success', fn)
+  if (_.isFn(fn)) pushStateHandler(this, 'success', fn)
   if (_.isFn(errorFn)) this['catch'](errorFn)
   return this
 }
 
 Task.prototype['catch'] = function (fn) {
-  if (_.isFn(fn)) addHandler.call(this, 'error', fn)
+  if (_.isFn(fn)) pushStateHandler(this, 'error', fn)
   return this
 }
 
@@ -89,13 +90,13 @@ Task.prototype._send = function (env, fn, args) {
   })
 }
 
-Task.prototype._checkInterval = function (maxDelay) {
-  var self = this, now = _.now()
-  self._timer = setInterval(function () {
-    if (self.memoized) {
-      clearTimer.call(self)
+function checkInterval(task, maxDelay) {
+  var now = _.now()
+  task._timer = setInterval(function () {
+    if (task.memoized) {
+      clearTimer.call(task)
     } else {
-      checkTaskDelay.call(self, now, maxDelay)
+      checkTaskDelay.call(task, now, maxDelay)
     }
   }, Task.intervalCheckTime)
 }
@@ -108,12 +109,12 @@ function addWorkerMessageListener(task) {
   task.worker.addEventListener('message', onMessage(task))
 }
 
-function addHandler(type, fn) {
-  if (this.memoized) {
-    if (this.memoized.type === ('run:' + type))
-      fn.call(null, getValue(this.memoized))
+function pushStateHandler(task, type, fn) {
+  if (task.memoized) {
+    if (task.memoized.type === ('run:' + type))
+      fn.call(null, getValue(task.memoized))
   } else {
-    this.listeners[type].push(fn)
+    task.listeners[type].push(fn)
   }
 }
 

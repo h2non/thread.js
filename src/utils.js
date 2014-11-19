@@ -13,7 +13,7 @@ _.isFn = function (obj) {
 }
 
 _.isObj = function (o) {
-  return o && toStr.call(o) === '[object Object]'
+  return (o && toStr.call(o) === '[object Object]') || false
 }
 
 _.isArr = function (o) {

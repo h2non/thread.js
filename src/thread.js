@@ -5,8 +5,9 @@ var FakeWorker = require('./fake-worker')
 var pool = require('./pool')
 var store = require('./store')
 
+var Worker = window.Worker
 var URL = window.URL || window.webkitURL
-var hasWorkers = _.isFn(window.Worker)
+var hasWorkers = _.isFn(Worker) || (Worker && typeof Worker === 'object') || false
 var BlobBuilder = window.BlobBuilder || window.WebKitBlobBuilder || window.MozBlobBuilder
 
 module.exports = Thread
@@ -36,10 +37,11 @@ Thread.prototype._setOptions = function (options) {
 Thread.prototype._create = function () {
   var src = _.getSource(workerSrc)
 
-  if (hasWorkers && URL)
+  if (hasWorkers && URL) {
     this.worker = new Worker(createBlob(src))
-  else
+  } else {
     this.worker = new FakeWorker(this.id)
+  }
 
   this.send(_.extend({ type: 'start' }, {
     env: _.serializeMap(this.options.env),

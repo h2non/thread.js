@@ -26,6 +26,7 @@ default: all
 all: test
 browser: banner browserify uglify
 test: browser mocha
+test-all: browser mocha karma
 
 banner:
 	@echo $(BANNER) > thread.js
@@ -45,6 +46,9 @@ mocha:
 
 karma:
 	$(KARMA) start
+
+karma-ci:
+	$(KARMA) start --single-run --browsers Chrome,Firefox
 
 loc:
 	wc -l src/*

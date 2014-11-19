@@ -3,7 +3,10 @@ module.exports = function(config) {
     files: [
       'node_modules/chai/chai.js',
       'thread.js',
-      'test/*.js'
+      'test/thread.js',
+      'test/task.js',
+      //'test/pool.js',
+      'test/store.js'
     ],
     exclude: [
       'test/utils.js'
@@ -11,13 +14,13 @@ module.exports = function(config) {
     frameworks: ['mocha'],
     browsers: [
       'Chrome',
-//      'ChromeCanary',
-//      'Firefox',
-//      'PhantomJS',
-//      'Opera',
-//      'Safari'
+      'ChromeCanary',
+      'Firefox',
+      'PhantomJS',
+      'Opera',
+      'Safari'
     ],
     reports: ['progress'],
-    singleRun: false 
+    singleRun: true
   })
 }
