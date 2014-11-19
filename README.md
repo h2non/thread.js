@@ -28,12 +28,10 @@ component install h2non/thread.js
 
 Or loading the script remotely
 ```html
-<script src="//cdn.rawgit.com/h2non/thread.js/0.1.6/thread.js"></script>
+<script src="//cdn.rawgit.com/h2non/thread.js/0.1.7/thread.js"></script>
 ```
 
 ## Environments
-
-Cross-browser support guaranteed running tests with [Karma](http://karma-runner.github.io/) and [BrowserStack](http://browserstack.com/)
 
 - Chrome >= 5
 - Firefox >= 3
@@ -104,7 +102,7 @@ task.then(function (array) {
 
 You should be aware of some limitations while using threads
 
-Threads has its own isolated scope, so that means each thread has its own memory space. 
+Threads has its own isolated scope, so that means each thread has its own memory space.
 That's means you must explicitly bind values or functions
 to the thread in order to consum them inside the thread scope.
 Any passed value to the thread scope will be cloned (it will be passed by value, not by reference),

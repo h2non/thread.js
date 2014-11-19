@@ -1,7 +1,7 @@
 {
   "name": "thread",
   "description": "The definitive library for real parallel non-blocking threads in the browser",
-  "version": "0.1.6",
+  "version": "0.1.7",
   "license": "MIT",
   "repository": "h2non/thread.js",
   "author": "Tomas Aparicio",
