@@ -748,6 +748,7 @@ function worker() {
     var ready = false
     var queue, origin, scriptsLoad, intervalId = null
     var fnRegex = /^\$\$fn\$\$/
+    var urlProtocolRegex = /^http[s]?/
     var isArrayNative = Array.isArray
     self.addEventListener = self[eventMethod]
 
@@ -802,7 +803,7 @@ function worker() {
       }
     }
 
-    function waitReady() {
+    function waitToDocumentReady() {
       var dom = self.document
       if (dom.readyState === 'complete') {
         ready = true
@@ -852,13 +853,20 @@ function worker() {
 
     function loadScripts(src) {
       if (isArr(src)) {
-        importFn.apply(self, src)
+        importFn.apply(self, src.map(makePathFullUrl))
       } else {
-        importFn(src)
+        importFn(makePathFullUrl(src))
       }
       if (!isWorker && !intervalId) {
         scriptsLoadTimer()
       }
+    }
+
+    function makePathFullUrl(path) {
+      if (urlProtocolRegex.test(path) === false) {
+        path = location.origin + path
+      }
+      return path
     }
 
     function require(src) {
@@ -986,7 +994,7 @@ function worker() {
     if (!isWorker) {
       scriptsLoad = []
       queue = []
-      waitReady()
+      waitToDocumentReady()
     }
 
     self.addEventListener(messageEvent, onMessage)
