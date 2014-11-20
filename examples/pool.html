@@ -5,13 +5,34 @@
   <body>
     <script src="../thread.js"></script>
     <script>
-      var results = []
-      var tasks = 30
-      var worker = thread({ env: { x: 2 } }).pool(5)
+    // synchronous tasks
+    var arr = [1,2,3,4,5,6,7,8,9]
+    // use until 10 theads to distribute task load
+    var worker = thread().pool(10)
 
-      function run(id) {
+    function runTask(id) {
+      worker.run(function (id) {
+        return this.arr.map(function(n) {
+          return Math.pow(id, n)
+        })
+      }, { arr: arr }, [ id ]).then(function(v) {
+        console.log(v)
+      })
+    }
+
+    for (var i = 0; i < 100; i += 1) {
+      runTask(i)
+    }
+    </script>
+    <script>
+      // asynchronous tasks
+      var results = []
+      var tasks = 100
+      // use until 10 theads to distribute task load
+      var worker = thread({ env: { x: 2 } }).pool(10)
+
+      function runAsyncTask(id) {
         return function () {
-          console.log('Running task:', id)
           worker.run(function (num, done) {
             return setTimeout(function () {
               done(null, Math.round(env.x * num * Math.random() * 100))
@@ -23,15 +44,9 @@
         }
       }
 
-      function runTasks() {
-        var i = 0
-        while (i < tasks) {
-          setTimeout(run(i), Math.random() * 1000)
-          i += 1
-        }
+      for (var x = 0; x < tasks; x += 1) {
+        setTimeout(runAsyncTask(i), Math.random() * 1000)
       }
-
-      runTasks()
 
       var intervalId = setInterval(function () {
         if (results.length === tasks) {
