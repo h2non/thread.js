@@ -48,7 +48,7 @@ karma:
 	$(KARMA) start
 
 karma-ci:
-	$(KARMA) start --single-run --browsers Chrome,Firefox
+	$(KARMA) start --single-run --browsers Firefox
 
 loc:
 	wc -l src/*
