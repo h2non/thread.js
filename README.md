@@ -34,7 +34,7 @@ Or loading the script remotely
 ## Environments
 
 - Chrome >= 5
-- Firefox >= 3
+- Firefox >= 2
 - Safari >= 5
 - Opera >= 10
 - IE >= 8
