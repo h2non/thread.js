@@ -94,7 +94,7 @@ task.then(function (array) {
 
 - [Basics](https://developer.mozilla.org/en-US/docs/Web/Guide/Performance/Using_web_workers)
 - [HTML5Rocks Tutorial](http://www.html5rocks.com/es/tutorials/workers/basics/)
-- [Functions available to workers as global scope](https://developer.mozilla.org/en-US/docs/Web/API/Worker/Functions_and_classes_available_to_workers)
+- [Custom scope in Web Workers](https://developer.mozilla.org/en-US/docs/Web/API/Worker/Functions_and_classes_available_to_workers)
 - [Origin policy restrictions](http://www.html5rocks.com/en/tutorials/security/content-security-policy/)
 - [Specification](http://www.whatwg.org/specs/web-apps/current-work/multipage/workers.html)
 
