@@ -50,18 +50,18 @@ Task.prototype.run = Task.prototype.exec = function (fn, env, args) {
   return this
 }
 
-Task.prototype.then = function (fn, errorFn) {
+Task.prototype.then = Task.prototype.success = function (fn, errorFn) {
   if (_.isFn(fn)) pushStateHandler(this, 'success', fn)
   if (_.isFn(errorFn)) this['catch'](errorFn)
   return this
 }
 
-Task.prototype['catch'] = function (fn) {
+Task.prototype['catch'] = Task.prototype.error = function (fn) {
   if (_.isFn(fn)) pushStateHandler(this, 'error', fn)
   return this
 }
 
-Task.prototype['finally'] = function (fn) {
+Task.prototype['finally'] = Task.prototype.finish = function (fn) {
   if (_.isFn(fn)) {
     if (this.memoized)
       fn.call(null, getValue(this.memoized))
