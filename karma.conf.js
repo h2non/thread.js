@@ -34,9 +34,6 @@ module.exports = function(config) {
       //'test/pool.js',
       'test/store.js'
     ],
-    exclude: [
-      'test/utils.js'
-    ],
     frameworks: ['mocha'],
     sauceLabs: {
       testName: 'thread.js'

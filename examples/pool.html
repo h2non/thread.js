@@ -29,11 +29,11 @@
       var results = []
       var tasks = 100
       // use until 10 theads to distribute task load
-      var worker = thread({ env: { x: 2 } }).pool(10)
+      var worker2 = thread({ env: { x: 2 } }).pool(10)
 
       function runAsyncTask(id) {
         return function () {
-          worker.run(function (num, done) {
+          worker2.run(function (num, done) {
             return setTimeout(function () {
               done(null, Math.round(env.x * num * Math.random() * 100))
             }, Math.random() * 1000)
@@ -52,8 +52,8 @@
         if (results.length === tasks) {
           clearInterval(intervalId)
           console.log('Results:', results)
-          console.log('Used threads:', worker.threadPool.length)
-          worker.kill() // kill all threads
+          console.log('Used threads:', worker2.threadPool.length)
+          worker2.kill() // kill all threads
         }
       }, 250)
     </script>
