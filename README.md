@@ -489,7 +489,7 @@ task.run(function () {
 ```
 
 #### Task#then(successFn [, errorFn])
-Return: `task`
+Return: `task` Alias: `success`
 
 Add success and error (optionally) result handlers for the current task
 
@@ -502,7 +502,7 @@ task.run(longAsyncTask).then(function (result) {
 ```
 
 #### Task#catch(errorFn)
-Return: `task`
+Return: `task` Alias: `error`
 
 Add an error handlers for the current task
 
@@ -515,7 +515,7 @@ task.run(longAsyncTask).catch(function (err) {
 ```
 
 #### Task#finally(finalFn)
-Return: `task`
+Return: `task` Alias: `finish`
 
 Add a final handler for the current task.
 It will be ejecuted when the task finished with `success` or `error` state
