@@ -15,7 +15,7 @@
       // add another library
       worker.require('http://cdn.rawgit.com/h2non/fw/0.1.2/fw.js')
       // relative path
-      worker.require('../thread.js')
+      worker.require('/thread.js')
 
       worker.run(function (num) {
         return _.sortBy(env.numbers.concat([ num ]), function (num) {
