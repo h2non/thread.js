@@ -5,6 +5,7 @@
   "license": "MIT",
   "repository": "h2non/thread.js",
   "author": "Tomas Aparicio",
+  "main": "lib",
   "scripts": {
     "test": "make test && make karma-ci"
   },

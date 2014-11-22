@@ -35,7 +35,7 @@ browserify:
 	$(BROWSERIFY) \
 		--exports require \
 		--standalone thread \
-		--entry ./src/index.js >> ./thread.js
+		--entry ./lib/index.js >> ./thread.js
 
 uglify:
 	$(UGLIFYJS) thread.js --mangle --preamble $(BANNER) --source-map thread.min.js.map --source-map-url http://cdn.rawgit.com/h2non/thread.js/$(VERSION)/thread.min.js.map > thread.min.js
@@ -51,7 +51,7 @@ karma-ci:
 	$(KARMA) start --single-run --browsers Firefox
 
 loc:
-	wc -l src/*
+	wc -l lib/*
 
 gzip:
 	gzip -c thread.min.js | wc -c

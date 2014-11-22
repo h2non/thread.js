@@ -1,5 +1,5 @@
 var expect = require('chai').expect
-var _ = require('../src/utils')
+var _ = require('../lib/utils')
 
 describe('utils', function () {
 

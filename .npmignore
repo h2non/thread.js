@@ -1,0 +1,10 @@
+bower_components
+thread.js
+thread.min.js
+thread.min.js.map
+.travis.yml
+.editorconfig
+.gitignore
+karma.conf.js
+bower.json
+component.json
