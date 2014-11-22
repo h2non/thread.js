@@ -32,11 +32,11 @@
     "karma.conf.js",
     "Makefile",
     ".editorconfig",
+    ".npmignore",
     ".gitignore",
     ".travis.yml",
     ".npmignore",
     "package.json",
-    "component.json",
-    "examples"
+    "component.json"
   ]
 }
