@@ -670,7 +670,7 @@ _.isObj = function (o) {
 }
 
 _.isArr = function (o) {
-  return (o && isArrayNative ? isArrayNative(o) : toStr.call(o) === '[object Array]') || false
+  return o && (isArrayNative ? isArrayNative(o) : toStr.call(o) === '[object Array]') || false
 }
 
 _.toArr = function (args) {
