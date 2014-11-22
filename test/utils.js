@@ -3,6 +3,55 @@ var _ = require('../src/utils')
 
 describe('utils', function () {
 
+  describe('isArr', function () {
+    it('should be an array', function () {
+      expect(_.isArr([])).to.be.true
+      expect(_.isArr(new Array)).to.be.true
+    })
+
+    it('should not be an array', function () {
+      expect(_.isArr({})).to.be.false
+      expect(_.isArr(undefined)).to.be.false
+      expect(_.isArr(null)).to.be.false
+      expect(_.isArr('')).to.be.false
+      expect(_.isArr(new Date)).to.be.false
+      expect(_.isArr(10)).to.be.false
+    })
+  })
+
+  describe('isObj', function () {
+    it('should be an object', function () {
+      expect(_.isObj({})).to.be.true
+      expect(_.isObj(new Object)).to.be.true
+    })
+
+    it('should not be an object', function () {
+      expect(_.isObj([])).to.be.false
+      expect(_.isObj(undefined)).to.be.false
+      expect(_.isObj(null)).to.be.false
+      expect(_.isObj('')).to.be.false
+      expect(_.isObj(new Date)).to.be.false
+      expect(_.isObj(10)).to.be.false
+    })
+  })
+
+  describe('isFn', function () {
+    it('should be a function', function () {
+      expect(_.isFn(function () {})).to.be.true
+      expect(_.isFn(new Function)).to.be.true
+    })
+
+    it('should not be a function', function () {
+      expect(_.isFn([])).to.be.false
+      expect(_.isFn({})).to.be.false
+      expect(_.isFn(undefined)).to.be.false
+      expect(_.isFn(null)).to.be.false
+      expect(_.isFn('')).to.be.false
+      expect(_.isFn(new Date)).to.be.false
+      expect(_.isFn(10)).to.be.false
+    })
+  })
+
   describe('serializeMap', function () {
     var map = {
       name: 'John',
