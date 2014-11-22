@@ -39,8 +39,5 @@
     "mocha-phantomjs": "^3.4.1",
     "phantomjs": "^1.9.7-9",
     "uglify-js": "^2.4.15"
-  },
-  "dependencies": {
-    "karma": "^0.12.23"
   }
 }
