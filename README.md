@@ -10,7 +10,7 @@ It provides awesome **features** such as **data binding serialization**, **cross
 task load across multiple workers transparently using a simple best availability task schedule availability algorithm
 
 It uses [Web Workers](http://en.wikipedia.org/wiki/Web_worker) to create real threads,
-but provides fallback support for older browsers based on an `iframe` hack (you can be safe in IE8 and IE9)
+but provides fallback support for older browsers based on an `iframe` hack (you can be safe in IE9)
 
 Welcome to the multithreading world in the browser, now made simple and tiny (5KB gzipped)
 
@@ -30,7 +30,7 @@ component install h2non/thread.js
 
 Or loading the script remotely
 ```html
-<script src="//cdn.rawgit.com/h2non/thread.js/0.1.10/thread.js"></script>
+<script src="//cdn.rawgit.com/h2non/thread.js/0.1.11/thread.js"></script>
 ```
 
 ## Environments
