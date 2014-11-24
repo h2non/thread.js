@@ -56,10 +56,10 @@ FakeWorker.prototype._unsubscribeListeners = function () {
 
 FakeWorker.prototype._getWindow = function () {
   var win = this.iframe.contentWindow
-  var wEval = win.eval, wExecScript = win.execScript
-  if (!wEval && wExecScript) {
+  var wEval = win.eval
+  if (!wEval && win.execScript) {
     // win.eval() magically appears when this is called in IE
-    wExecScript.call(win, 'null')
+    win.execScript('null')
     wEval = win.eval
   }
   return win
@@ -206,6 +206,41 @@ function pool(num, thread) {
 
 },{"./utils":7}],4:[function(require,module,exports){
 var _ = require('./utils')
+
+// ES5 shim for legacy browsers
+function toInteger(num) {
+  var n = +num
+  if (n !== n) { // isNaN
+      n = 0;
+  } else if (n !== 0 && n !== (1 / 0) && n !== -(1 / 0)) {
+      n = (n > 0 || -1) * Math.floor(Math.abs(n))
+  }
+  return n
+}
+
+if (!Array.prototype.indexOf) {
+  Array.prototype.indexOf = function indexOf(sought /*, fromIndex */) {
+    var self = Object(this)
+    var length = self.length >>> 0
+
+    if (!length) { return -1 }
+
+    var i = 0
+    if (arguments.length > 1) {
+      i = toInteger(arguments[1])
+    }
+
+    // handle negative indices
+    i = i >= 0 ? i : Math.max(0, length + i)
+    for (; i < length; i++) {
+      if (i in self && self[i] === sought) {
+        return i
+      }
+    }
+    return -1
+  }
+}
+// end shim
 
 var buf = []
 var store = module.exports = {}
@@ -746,7 +781,7 @@ function worker() {
   (function isolated() {
     'use strict'
     var namespace = 'env'
-    var isWorker = self.document === undefined
+    var isWorker = typeof document === 'undefined'
     var toStr = Object.prototype.toString
     var slice = Array.prototype.slice
     var eventMethod = self.addEventListener ? 'addEventListener' : 'attachEvent'
@@ -811,12 +846,11 @@ function worker() {
     }
 
     function waitToDocumentReady() {
-      var dom = self.document
-      if (dom.readyState === 'complete') {
+      if (document.readyState === 'complete') {
         ready = true
       } else {
-        dom.onreadystatechange = function() {
-          if (dom.readyState === 'complete') {
+        document.onreadystatechange = function () {
+          if (document.readyState === 'complete') {
             ready = true
           }
         }
@@ -830,7 +864,7 @@ function worker() {
       script.src = src
       scriptsLoad.push(script)
 
-      script.onload = script.onreadystatechange = function() {
+      script.onload = script.onreadystatechange = function () {
         if (!this.readyState || this.readyState === 'loaded' || this.readyState === 'complete') {
           scriptsLoad.splice(scriptsLoad.indexOf(script), 1)
         }
