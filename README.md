@@ -39,7 +39,9 @@ Or loading the script remotely
 - Firefox >= 2
 - Safari >= 5
 - Opera >= 10
-- IE >= 8
+- IE >= 9
+- PhantomJS >= 1.6
+- SlimerJS >= 0.8
 
 ## Basic usage
 
