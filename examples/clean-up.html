@@ -9,20 +9,24 @@
         env: { error: true }
       })
 
-      worker.run(function (done) {
+      var task = worker.run(function (done) {
         // do something
         setTimeout(done, 50)
-      }).catch(function (err) {
+      })['catch'](function (err) {
         console.log('Error:', err)
       })
 
       // clean up
       worker.flush()
-      // check it
-      worker.flushed() // -> true
+      // check running tasks
+      worker.flushTasks()
+      // flush finished task
+      task.flush()
+      console.log('Flushed:', task.flushed()) // -> true
       // optionally, kill it
       worker.kill()
-
+      // check it
+      console.log('Finished:', worker.terminated)
     </script>
   </body>
 </html>

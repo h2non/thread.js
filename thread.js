@@ -12,6 +12,7 @@ module.exports = FakeWorker
 
 function FakeWorker(id) {
   this.id = id
+  this._terminated = false
   this.listeners = {}
   this._create()
   this._setupListeners()
@@ -55,19 +56,22 @@ FakeWorker.prototype._unsubscribeListeners = function () {
 }
 
 FakeWorker.prototype._getWindow = function () {
-  var win = this.iframe.contentWindow
-  var wEval = win.eval
-  if (!wEval && win.execScript) {
-    // win.eval() magically appears when this is called in IE
-    win.execScript('null')
-    wEval = win.eval
+  var win = null
+  if (!this._terminated) {
+    win = this.iframe.contentWindow
+    var wEval = win.eval
+    if (!wEval && win.execScript) {
+      // win.eval() magically appears when this is called in IE
+      win.execScript('null')
+      wEval = win.eval
+    }
   }
   return win
 }
 
 FakeWorker.prototype._initialize = function (msg) {
   var win = this._getWindow()
-  win.eval.call(win, _.getSource(workerSrc))
+  if (win) win.eval.call(win, _.getSource(workerSrc))
 }
 
 FakeWorker.prototype.addEventListener = function (type, fn) {
@@ -89,12 +93,15 @@ FakeWorker.prototype.removeEventListener = function (type, fn) {
 
 FakeWorker.prototype.postMessage = function (msg) {
   var win = this._getWindow()
-  msg.origin = getLocation()
-  win.postMessage(msg, msg.origin)
+  if (win) {
+    msg.origin = getLocation()
+    win.postMessage(msg, msg.origin)
+  }
 }
 
 FakeWorker.prototype.terminate = function () {
-  this.listeners = null
+  this.listeners = {}
+  this._terminated = true
   this._unsubscribeListeners()
   document.body.removeChild(this.iframe)
 }
