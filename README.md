@@ -40,6 +40,8 @@ Or loading the script remotely
 - Safari >= 5
 - Opera >= 10
 - IE >= 8
+- PhantomJS >= 1.6
+- SlimerJS >= 0.8
 
 ## Basic usage
 
