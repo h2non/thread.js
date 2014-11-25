@@ -109,7 +109,7 @@ var worker = thread({
 })
 ```
 
-If you use full URLs, be aware about cross-origin policy.
+If you use full URLs to load the `eval` script, be aware about cross-origin policy.
 You must define the CORS headers properly in the server
 
 ## Web Workers resources
