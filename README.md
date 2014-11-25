@@ -96,10 +96,10 @@ task.then(function (array) {
 
 #### Note about Internet Explorer usage
 
-Since Microsoft makes an effort to break the Web and standards, due to a technical limitation in IE 10 and 11,
+Since Microsoft makes a continuous effort to break the Web and its standards, due to a technical limitation in IE 10 and 11,
 it is required to use an external script to create the thread properly.
 
-You must customize the `eval` script path when creating threads from IE.
+You must customize the `evalPath` option when creating threads from IE.
 The eval script is located in `lib/eval.js`
 
 Commong example with Bower:
@@ -108,6 +108,9 @@ var worker = thread({
   evalPath: '/bower_components/thread.js/lib/eval.js' // default 'lib/eval.js'
 })
 ```
+
+If you use full URLs, be aware about cross-origin policy.
+You must define the CORS headers properly in the server
 
 ## Web Workers resources
 
