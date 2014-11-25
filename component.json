@@ -1,11 +1,12 @@
 {
   "name": "thread",
   "description": "The definitive library for real parallel non-blocking threads in the browser",
-  "version": "0.1.11",
+  "version": "0.1.12",
   "author": "Tomas Aparicio",
   "repository": "h2non/thread.js",
   "scripts": [
     "thread.js",
+    "lib/eval.js",
     "thread.min.js",
     "thread.min.js.map"
   ],

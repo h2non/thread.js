@@ -8,6 +8,7 @@
       // from constructor
       var worker = thread({
         env: {
+          // cannot bind native function
           defer: setTimeout
         }
       })

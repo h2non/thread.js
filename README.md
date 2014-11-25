@@ -30,7 +30,7 @@ component install h2non/thread.js
 
 Or loading the script remotely
 ```html
-<script src="//cdn.rawgit.com/h2non/thread.js/0.1.11/thread.js"></script>
+<script src="//cdn.rawgit.com/h2non/thread.js/0.1.12/thread.js"></script>
 ```
 
 ## Environments
@@ -91,6 +91,21 @@ task.then(function (array) {
   console.log('Ups:', err.message)
 }).finally(function (result) {
   console.log('Final result:', result) // -> [3, 1, 2]
+})
+```
+
+#### Note about Internet Explorer usage
+
+Since Microsoft makes an effort to break the Web and standards, due to a technical limitation in IE 10 and 11,
+it is required to use an external script to create the thread properly.
+
+You must customize the `eval` script path when creating threads from IE.
+The eval script is located in `lib/eval.js`
+
+Commong example with Bower:
+```js
+var worker = thread({
+  evalPath: '/bower_components/thread.js/lib/eval.js' // default 'lib/eval.js'
 })
 ```
 
