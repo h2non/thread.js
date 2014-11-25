@@ -102,7 +102,7 @@ it is required to use an external script to create the thread properly.
 You must customize the `evalPath` option when creating threads from IE.
 The eval script is located in `lib/eval.js`
 
-Commong example with Bower:
+Common example with Bower:
 ```js
 var worker = thread({
   evalPath: '/bower_components/thread.js/lib/eval.js' // default 'lib/eval.js'
