@@ -33,7 +33,7 @@
     "lib/store.js",
     "lib/task.js",
     "lib/thread.js",
-    "lib/util.js",
+    "lib/utils.js",
     "lib/worker.js",
     "test",
     "karma.conf.js",
