@@ -36,10 +36,10 @@ Or loading the script remotely
 ## Environments
 
 - Chrome >= 5
-- Firefox >= 2
+- Firefox >= 3
 - Safari >= 5
-- Opera >= 10
-- IE >= 9
+- Opera >= 12
+- IE >= 9 (IE8 is not officially supported, but it may work)
 - PhantomJS >= 1.6
 - SlimerJS >= 0.8
 
@@ -119,7 +119,9 @@ but you should be aware about global scope dependencies and mutation in your cod
 
 All values binded to the thread must be JSON-serializable, meaning only primitives types, raw objects and functions.
 Same with return values from threads.
-DOM nodes, built-in objects, native functions and prototypes chains cannot be passed to the thread
+
+In modern browsers, there is possible to bind complex data type structures to the Worker scope using the Transferable interface which supports the [internal structure cloning algorithm](http://www.w3.org/html/wg/drafts/html/master/infrastructure.html#internal-structured-cloning-algorithm).
+However, there are still some limitations: DOM nodes, native built-in functions and prototypes chains cannot be cloned and therefore, is not possible to bind them to the thread
 
 Additionally, threads do not have access to the DOM API
 

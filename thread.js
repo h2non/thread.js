@@ -116,6 +116,7 @@ var store = require('./store')
 var Thread = require('./thread')
 
 module.exports = ThreadFactory
+window.thread = window.thread || ThreadFactory
 
 function ThreadFactory(options) {
   return new Thread(options)
@@ -236,7 +237,6 @@ if (!Array.prototype.indexOf) {
     if (arguments.length > 1) {
       i = toInteger(arguments[1])
     }
-
     // handle negative indices
     i = i >= 0 ? i : Math.max(0, length + i)
     for (; i < length; i++) {
@@ -510,6 +510,7 @@ var store = require('./store')
 var Worker = window.Worker
 var URL = window.URL || window.webkitURL
 var hasWorkers = _.isFn(Worker) || (Worker && typeof Worker === 'object') || false
+var isIE = (/MSIE (10|11)/).test(window.navigator.userAgent)
 var BlobBuilder = window.BlobBuilder || window.WebKitBlobBuilder || window.MozBlobBuilder
 
 module.exports = Thread
@@ -520,45 +521,21 @@ function Thread(options) {
   this.options = {}
   this._tasks = []
   this._latestTask = 0
-  this._setOptions(options)
-  this._create()
+  setOptions(this, options)
+  createThread(this)
 }
 
 Thread.prototype.isPool = false
 Thread.prototype.maxTaskDelay = 0
 Thread.prototype.idleTime = 30 * 1000
 
-Thread.prototype._setOptions = function (options) {
-  this.options.namespace = 'env'
-  this.options.require = []
-  this.options.env = {}
-  _.extend(this.options, options)
-  return this
-}
-
-Thread.prototype._create = function () {
-  var src = _.getSource(workerSrc)
-
-  if (hasWorkers && URL) {
-    this.worker = new Worker(createBlob(src))
-  } else {
-    this.worker = new FakeWorker(this.id)
-  }
-
-  this.send(_.extend({ type: 'start' }, {
-    env: _.serializeMap(this.options.env),
-    namespace: this.options.namespace
-  }))
-  this.worker.addEventListener('error', function (e) { throw e })
-  this.require(this.options.require)
-  store.push(this)
-
-  return this
+Thread.prototype.defaults = {
+  // custom Worker external source to prevent security error in IE 10 & 11
+  evalPath: location.protocol + '//cdn.rawgit.com/h2non/thread.js/0.1.12/lib/eval.js'
 }
 
 Thread.prototype.run = Thread.prototype.exec = function (fn, env, args) {
   var task
-
   if (_.isArr(env)) {
     args = env
     env = arguments[2]
@@ -657,7 +634,8 @@ Thread.prototype.running = function () {
 
 Thread.prototype.idle = Thread.prototype.sleep = function () {
   return !this.running() && !this.terminated
-    && (this._latestTask === 0 || (_.now() - this._latestTask) > this.idleTime)
+    && (this._latestTask === 0
+    || (_.now() - this._latestTask) > this.idleTime)
 }
 
 Thread.prototype.on = Thread.prototype.addEventListener = function (type, fn) {
@@ -676,6 +654,39 @@ Thread.prototype.toString = function () {
   return '[object Thread]'
 }
 
+pool.Thread = Thread
+
+Thread.Task = Task
+
+function setOptions(thread, options) {
+  thread.options.namespace = 'env'
+  thread.options.require = []
+  thread.options.env = {}
+  _.extend(thread.options, thread.defaults, options)
+}
+
+function createThread(thread) {
+  var src = _.getSource(workerSrc)
+  if (hasWorkers && URL) {
+    if (isIE) {
+      thread.worker = new Worker(thread.options.evalPath)
+      thread.worker.sendMessage(src)
+    } else {
+      thread.worker = new Worker(createBlob(src))
+    }
+  } else {
+    thread.worker = new FakeWorker(thread.id)
+  }
+
+  thread.send(_.extend({ type: 'start' }, {
+    env: _.serializeMap(thread.options.env),
+    namespace: thread.options.namespace
+  }))
+  thread.worker.addEventListener('error', function (e) { throw e })
+  thread.require(thread.options.require)
+  store.push(thread)
+}
+
 function createBlob(src) {
   var blob = null
   try {
@@ -687,10 +698,6 @@ function createBlob(src) {
   }
   return URL.createObjectURL(blob)
 }
-
-pool.Thread = Thread
-
-Thread.Task = Task
 
 },{"./fake-worker":1,"./pool":3,"./store":4,"./task":5,"./utils":7,"./worker":8}],7:[function(require,module,exports){
 var _ = exports
