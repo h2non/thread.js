@@ -7,3 +7,4 @@ test
 karma.conf.js
 bower.json
 component.json
+Makefile
