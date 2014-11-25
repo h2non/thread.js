@@ -350,7 +350,7 @@ Task.prototype.run = Task.prototype.exec = function (fn, env, args) {
   this['finally'](cleanTask(thread, this))
 
   addWorkerMessageListener(this)
-  this._send(env, fn, args)
+  sendMessage(this, env, fn, args)
 
   return this
 }
@@ -385,9 +385,13 @@ Task.prototype.flushed = function () {
   return !this.thread && !this.worker
 }
 
-Task.prototype._send = function (env, fn, args) {
-  this.worker.postMessage({
-    id: this.id,
+Task.create = function (thread) {
+  return new Task(thread)
+}
+
+function sendMessage(task, env, fn, args) {
+  task.worker.postMessage({
+    id: task.id,
     type: 'run',
     env: env,
     src: fn.toString(),
@@ -404,10 +408,6 @@ function checkInterval(task, maxDelay) {
       checkTaskDelay.call(task, now, maxDelay)
     }
   }, Task.intervalCheckTime)
-}
-
-Task.create = function (thread) {
-  return new Task(thread)
 }
 
 function addWorkerMessageListener(task) {
@@ -530,8 +530,8 @@ Thread.prototype.maxTaskDelay = 0
 Thread.prototype.idleTime = 30 * 1000
 
 Thread.prototype.defaults = {
-  // custom Worker external source to prevent security error in IE 10 & 11
-  evalPath: location.protocol + '//cdn.rawgit.com/h2non/thread.js/0.1.12/lib/eval.js'
+  // customizable Worker external source to prevent security error in IE 10 & 11
+  evalPath: '/lib/eval.js'
 }
 
 Thread.prototype.run = Thread.prototype.exec = function (fn, env, args) {
