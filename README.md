@@ -30,7 +30,7 @@ component install h2non/thread.js
 
 Or loading the script remotely
 ```html
-<script src="//cdn.rawgit.com/h2non/thread.js/0.1.12/thread.js"></script>
+<script src="//cdn.rawgit.com/h2non/thread.js/0.1.13/thread.js"></script>
 ```
 
 ## Environments
@@ -40,7 +40,7 @@ Or loading the script remotely
 - Safari >= 5
 - Opera >= 12
 - IE >= 9 (IE8 is not officially supported, but it may work)
-- PhantomJS >= 1.6
+- PhantomJS >= 1.7
 - SlimerJS >= 0.8
 
 ## Basic usage
@@ -153,6 +153,8 @@ Supported options:
 - **env** `object` Custom environment to bind to the isolated thread scope
 - **require** `string|array|object` Source path scripts to load or map of values/functions to bind
 - **namespace** `string` Global namespace to allocate the scope environment. Default to `env`
+- **evalPath** `string` Path to `eval.js` script, required in IE 10 & 11. Default to `lib/eval.js`
+- **silent** `boolean` Enable/disable silent mode. If enabled, Worker errors will not throw an exception and you should subscribe to the `error` event to handle them properly. Default `false`
 
 ```js
 thread({
