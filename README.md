@@ -10,7 +10,7 @@ It provides awesome **features** such as **data binding serialization**, **cross
 task load across multiple workers transparently using a simple best availability task schedule algorithm
 
 It uses [Web Workers](http://en.wikipedia.org/wiki/Web_worker) to create real threads,
-but provides fallback support for older browsers based on an `iframe` hack (you can be safe in IE9)
+but provides fallback support for older browsers based on an `iframe` hack (now you can be safe in IE9 and other older browsers)
 
 Welcome to the multithreading world in the browser, now made simple and small (5KB gzipped)
 
