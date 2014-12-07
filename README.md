@@ -7,7 +7,7 @@ You can run **tasks in a non-blocking real thread** in a really simple way,
 with an elegant programatic aproach and great state handling
 
 It provides awesome **features** such as **data binding serialization**, **cross-scope arguments passing**, **asynchronous tasks**, **require external sources** easly in the thread and includes built-in support for creating **pool of threads** to distribute the
-task load across multiple workers transparently using a simple best availability task schedule availability algorithm
+task load across multiple workers transparently using a simple best availability task schedule algorithm
 
 It uses [Web Workers](http://en.wikipedia.org/wiki/Web_worker) to create real threads,
 but provides fallback support for older browsers based on an `iframe` hack (you can be safe in IE9)
