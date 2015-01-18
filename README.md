@@ -3,7 +3,7 @@
 **thread.js** is lightweight, reliable and rich featured library that
 **simplifies JavaScript parallel computing in browser** environments
 through a clean and elegant [API](#api) with promise-based asynchronous handling.
-You can run **tasks in a non-blocking real thread** in a really simple way,
+You can run **tasks in a real thread** in a really simple way,
 with an elegant programatic aproach and great state handling
 
 It provides awesome **features** such as **data binding serialization**, **cross-scope arguments passing**, **asynchronous tasks**, **require external sources** easly in the thread and includes built-in support for creating **pool of threads** to distribute the
