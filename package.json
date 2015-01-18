@@ -1,6 +1,6 @@
 {
   "name": "thread-js",
-  "description": "The definitive library for real parallel non-blocking threads in the browser",
+  "description": "The definitive library for real parallel threads in the browser",
   "version": "0.1.13",
   "license": "MIT",
   "repository": "h2non/thread.js",
