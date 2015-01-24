@@ -30,7 +30,7 @@ component install h2non/thread.js
 
 Or loading the script remotely
 ```html
-<script src="//cdn.rawgit.com/h2non/thread.js/0.1.13/thread.js"></script>
+<script src="//cdn.rawgit.com/h2non/thread.js/0.1.14/thread.js"></script>
 ```
 
 ## Environments

@@ -2,8 +2,6 @@ bower_components
 .travis.yml
 .editorconfig
 .gitignore
-lib
-test
 karma.conf.js
 bower.json
 component.json
