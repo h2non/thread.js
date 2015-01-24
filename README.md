@@ -1,18 +1,18 @@
-# thread.js [![Build Status](https://api.travis-ci.org/h2non/thread.js.svg?branch=master)][travis] [![Stories in Ready](https://badge.waffle.io/h2non/thread.js.png?label=ready&title=Ready)](https://waffle.io/h2non/thread.js) [![Code Climate](https://codeclimate.com/github/h2non/thread.js/badges/gpa.svg)](https://codeclimate.com/github/h2non/thread.js) [![Gitter chat](https://badges.gitter.im/h2non/thread.js.png)](https://gitter.im/h2non/thread.js)
+# thread.js [![Build Status](https://api.travis-ci.org/h2non/thread.js.svg?branch=master)][travis] [![Stories in Ready](https://badge.waffle.io/h2non/thread.js.png?label=ready&title=Ready)](https://waffle.io/h2non/thread.js) [![Code Climate](https://codeclimate.com/github/h2non/thread.js/badges/gpa.svg)](https://codeclimate.com/github/h2non/thread.js) [![Version](https://img.shields.io/bower/v/thread.svg)](https://github.com/h2non/thread.js/releases) [![Gitter chat](https://badges.gitter.im/h2non/thread.js.png)](https://gitter.im/h2non/thread.js)
 
 **thread.js** is lightweight, reliable and rich featured library that
 **simplifies JavaScript parallel computing in browser** environments
 through a clean and elegant [API](#api) with promise-based asynchronous handling.
-You can run **tasks in a non-blocking real thread** in a really simple way,
+You can run **tasks in a real thread** in a really simple way,
 with an elegant programatic aproach and great state handling
 
 It provides awesome **features** such as **data binding serialization**, **cross-scope arguments passing**, **asynchronous tasks**, **require external sources** easly in the thread and includes built-in support for creating **pool of threads** to distribute the
-task load across multiple workers transparently using a simple best availability task schedule availability algorithm
+task load across multiple workers transparently using a simple best availability task schedule algorithm
 
 It uses [Web Workers](http://en.wikipedia.org/wiki/Web_worker) to create real threads,
-but provides fallback support for older browsers based on an `iframe` hack (you can be safe in IE9)
+but provides fallback support for older browsers based on an `iframe` hack (now you can be safe in IE9 and other older browsers)
 
-Welcome to the multithreading world in the browser, now made simple and tiny (5KB gzipped)
+Welcome to the multithreading world in the browser, now made simple and small (5KB gzipped)
 
 Getting started with [basic usage](#basic-usage),
 some [examples](https://github.com/h2non/thread.js/tree/master/examples) or [tests](https://github.com/h2non/thread.js/tree/master/test) and be aware about [threads limitations](#threads-limitations)
