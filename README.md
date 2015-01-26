@@ -6,13 +6,13 @@ through a clean and elegant [API](#api) with promise-based asynchronous handling
 You can run **tasks in a real thread** in a really simple way,
 with an elegant programatic aproach and great state handling
 
-It provides awesome **features** such as **data binding serialization**, **cross-scope arguments passing**, **asynchronous tasks**, **require external sources** easly in the thread and includes built-in support for creating **pool of threads** to distribute the
-task load across multiple workers transparently using a simple best availability task schedule algorithm
+It provides awesome **features** such as **data binding serialization**, **cross-scope arguments passing**, **asynchronous tasks**, **require external scripts** easly in the thread and includes built-in support to create a **pool of threads** to distribute the
+task load across multiple workers transparently using a simple best load availability schedule algorithm
 
 It uses [Web Workers](http://en.wikipedia.org/wiki/Web_worker) to create real threads,
 but provides fallback support for older browsers based on an `iframe` hack (now you can be safe in IE9 and other older browsers)
 
-Welcome to the multithreading world in the browser, now made simple and small (5KB gzipped)
+Welcome to the multithreading world in the browser, now made simple, funny and small (5KB gzipped)
 
 Getting started with [basic usage](#basic-usage),
 some [examples](https://github.com/h2non/thread.js/tree/master/examples) or [tests](https://github.com/h2non/thread.js/tree/master/test) and be aware about [threads limitations](#threads-limitations)
@@ -23,6 +23,7 @@ Via [Bower](http://bower.io)
 ```bash
 bower install thread
 ```
+
 Via [Component](https://github.com/component/component)
 ```bash
 component install h2non/thread.js
@@ -121,7 +122,7 @@ You must define the CORS headers properly in the server
 
 You should be aware of some limitations while using threads
 
-Threads has its own isolated scope, so that means each thread has its own memory space.
+Threads has its own isolated scope, so that means each thread has its own memory stack space.
 That's means you must explicitly bind values or functions
 to the thread in order to consum them inside the thread scope.
 Any passed value to the thread scope will be cloned (it will be passed by value, not by reference),
@@ -171,7 +172,7 @@ thread({
 #### thread#run(fn, env, args)
 Return: `task` Alias: `exec`
 
-Run the given function in the thread isolated scope.
+Run the given function in the thread.
 You can optionally bind a custom context (as `map` of values) or passing function arguments
 (as `array`) to be injected when the function will be invoked
 
