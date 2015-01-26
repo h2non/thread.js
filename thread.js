@@ -117,7 +117,7 @@ function ThreadFactory(options) {
   return new Thread(options)
 }
 
-ThreadFactory.VERSION = '0.1.15'
+ThreadFactory.VERSION = '0.1.16'
 ThreadFactory.create = ThreadFactory
 ThreadFactory.Task = Thread.Task
 ThreadFactory.Thread = Thread
@@ -133,70 +133,25 @@ ThreadFactory.killIdle = ThreadFactory.terminateIdle = store.killIdle
 },{"./store":4,"./thread":6}],3:[function(require,module,exports){
 var _ = require('./utils')
 
-module.exports = pool
+module.exports = threadPool
 
-function pool(num, thread) {
-  var threadRun = thread.run
+function threadPool(poolSize, thread) {
   var threads = [ thread ]
-  var options = thread.options
-  var terminate = thread.terminate
+  thread._run = thread.run
+  thread._terminate = thread.terminate
 
-  function findBestAvailableThread(offset) {
-    var i, l, thread, pending
-    for (i = 0, l = threads.length; i < l; i += 1) {
-      thread = threads[i]
-      pending = thread.pending()
-      if (pending === 0 || pending < offset) {
-        if (thread.terminated) {
-          threads.splice(i, 1)
-          l -= 1
-        } else {
-          return thread
-        }
-      }
-    }
-  }
-
-  function newThread() {
-    var thread = new pool.Thread(options)
-    threads.push(thread)
-    return thread
-  }
-
-  function runTask(thread, args) {
-    var task
-    if (thread === threads[0]) {
-      task = threadRun.apply(thread, args)
-    } else {
-      task = thread.run.apply(thread, args)
-    }
-    return task
-  }
-
+  // decorate the thread public interface
   thread.run = thread.exec = function () {
-    var args = arguments
-
-    function nextThread(count) {
-      var task, thread = findBestAvailableThread(count)
-      if (thread) {
-        task = runTask(thread, args)
-      } else {
-        if (threads.length < num) {
-          task = runTask(newThread(), args)
-        } else {
-          task = nextThread(count + 1)
-        }
-      }
-      return task
-    }
-
-    return nextThread(0)
+    return selectThread(thread, threads, poolSize, arguments)(0)
   }
 
   thread.terminate = thread.kill = function () {
-    _.each(threads, function (thread, i) {
-      if (i === 0) terminate.call(thread)
-      else thread.terminate()
+    _.each(threads, function (thread) {
+      if (thread._terminate) {
+        thread._terminate()
+      } else {
+        thread.terminate()
+      }
     })
     threads.splice(0)
   }
@@ -205,6 +160,51 @@ function pool(num, thread) {
   thread.isPool = true
 
   return thread
+}
+
+function createThread(threads) {
+  var mainThread = threads[0]
+  var thread = new mainThread.constructor(mainThread.options)
+  threads.push(thread)
+  return thread
+}
+
+function runTaskInThread(thread, threads, args) {
+  var run = thread === threads[0] ? '_run' : 'run'
+  return thread[run].apply(thread, args)
+}
+
+function selectThread(thread, threads, poolSize, args) {
+  return function newRound(busyThreads) {
+    var task, thread = findBestAvailableThread(threads, busyThreads)
+    if (thread) {
+      task = runTaskInThread(thread, threads, args)
+    } else {
+      if (threads.length < poolSize) {
+        task = runTaskInThread(createThread(threads), threads, args)
+      } else {
+        task = newRound(busyThreads + 1)
+      }
+    }
+    return task
+  }
+}
+
+function findBestAvailableThread(threads, offset) {
+  var thread, pending
+  for (var i = 0, l = threads.length; i < l; i += 1) {
+    thread = threads[i]
+    pending = thread.pending()
+    if (pending === 0 || pending < offset) {
+      if (thread.terminated) {
+        console.log('Length >', l, i)
+        threads.splice(i, 1)
+        l -= 1; i -= 1
+      } else {
+        return thread
+      }
+    }
+  }
 }
 
 },{"./utils":7}],4:[function(require,module,exports){
@@ -493,9 +493,11 @@ Thread.prototype.idleTime = 30 * 1000
 Thread.prototype.defaults = {
   // customizable Worker external source to prevent security error in IE 10 & 11 :S
   evalPath: 'lib/eval.js',
-  // enable/disable error throwing
+  // enable/disable error exception throwing
   silent: false
 }
+
+Thread.prototype.constructor = Thread
 
 Thread.prototype.run = Thread.prototype.exec = function (fn, env, args) {
   var task
@@ -617,8 +619,6 @@ Thread.prototype.toString = function () {
   return '[object Thread]'
 }
 
-pool.Thread = Thread
-
 Thread.Task = Task
 
 function setOptions(thread, options) {
@@ -675,31 +675,31 @@ var slice = Array.prototype.slice
 var hasOwn = Object.prototype.hasOwnProperty
 var isArrayNative = Array.isArray
 
-_.now = function () {
+exports.now = function () {
   return new Date().getTime()
 }
 
-_.isFn = function (obj) {
+exports.isFn = function (obj) {
   return typeof obj === 'function'
 }
 
-_.isObj = function (o) {
+exports.isObj = function (o) {
   return (o && toStr.call(o) === '[object Object]') || false
 }
 
-_.isArr = function (o) {
+exports.isArr = function (o) {
   return o && (isArrayNative ? isArrayNative(o) : toStr.call(o) === '[object Array]') || false
 }
 
-_.toArr = function (args) {
+exports.toArr = function (args) {
   return slice.call(args)
 }
 
-_.defer = function (fn) {
+exports.defer = function (fn) {
   setTimeout(fn, 1)
 }
 
-_.each = function (obj, fn) {
+exports.each = function (obj, fn) {
   var i, l
   if (_.isArr(obj))
     for (i = 0, l = obj.length; i < l; i += 1) fn(obj[i], i)
@@ -707,7 +707,7 @@ _.each = function (obj, fn) {
     for (i in obj) if (hasOwn.call(obj, i)) fn(obj[i], i)
 }
 
-_.extend = function (target) {
+exports.extend = function (target) {
   var args = _.toArr(arguments).slice(1)
   _.each(args, function (obj) {
     if (_.isObj(obj)) {
@@ -719,15 +719,15 @@ _.extend = function (target) {
   return target
 }
 
-_.getSource = function (fn) {
+exports.getSource = function (fn) {
   return '(' + fn.toString() + ').call(this)'
 }
 
-_.fnName = function (fn) {
+exports.fnName = function (fn) {
   return fn.name || (fn = /\W*function\s+([\w\$]+)\(/.exec(fn.toString()) ? fn[1] : '')
 }
 
-_.serializeMap = function (obj) {
+exports.serializeMap = function (obj) {
   if (_.isObj(obj)) {
     _.each(obj, function (fn, key) {
       if (_.isFn(fn)) {
@@ -739,7 +739,7 @@ _.serializeMap = function (obj) {
   return obj
 }
 
-_.uuid = function () {
+exports.uuid = function () {
   var uuid = '', i, random
   for (i = 0; i < 32; i++) {
     random = Math.random() * 16 | 0;
@@ -749,7 +749,7 @@ _.uuid = function () {
   return uuid
 }
 
-_.getLocation = function () {
+exports.getLocation = function () {
   return location.origin
     || location.protocol + "//" + location.hostname + (location.port ? ':' + location.port : '')
 }

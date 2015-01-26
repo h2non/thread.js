@@ -1,6 +1,6 @@
 {
   "name": "thread",
-  "version": "0.1.15",
+  "version": "0.1.16",
   "description": "The definitive library for real parallel threads in the browser",
   "author": "Tomas Aparicio",
   "repository": "h2non/thread.js",

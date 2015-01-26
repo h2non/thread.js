@@ -30,18 +30,15 @@ component install h2non/thread.js
 
 Or loading the script remotely
 ```html
-<script src="//cdn.rawgit.com/h2non/thread.js/0.1.15/thread.js"></script>
+<script src="//cdn.rawgit.com/h2non/thread.js/0.1.16/thread.js"></script>
 ```
 
-## Environments
+## Browser Support
 
-- Chrome >= 5
-- Firefox >= 3
-- Safari >= 5
-- Opera >= 12
-- IE >= 9 (IE8 is not officially supported, but it may work)
-- PhantomJS >= 1.7
-- SlimerJS >= 0.8
+![Chrome](https://raw.github.com/alrra/browser-logos/master/chrome/chrome_48x48.png) | ![Firefox](https://raw.github.com/alrra/browser-logos/master/firefox/firefox_48x48.png) | ![IE](https://raw.github.com/alrra/browser-logos/master/internet-explorer/internet-explorer_48x48.png) | ![Opera](https://raw.github.com/alrra/browser-logos/master/opera/opera_48x48.png) | ![Safari](https://raw.github.com/alrra/browser-logos/master/safari/safari_48x48.png)
+--- | --- | --- | --- | --- |
++4 | +3.5 | +10 | +10.6 | +7 |
+
 
 ## Basic usage
 

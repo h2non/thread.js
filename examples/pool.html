@@ -5,24 +5,22 @@
   <body>
     <script src="../thread.js"></script>
     <script>
-    // synchronous tasks
-    var arr = [1,2,3,4,5,6,7,8,9]
-    // use until 10 theads to distribute task load
-    var worker = thread().pool(10)
+      // synchronous tasks
+      var arr = [ 1, 2, 3, 4, 5, 6, 7, 8, 9 ]
+      // use until 10 theads to distribute task load
+      var worker = thread().pool(10)
 
-    function runTask(id) {
-      worker.run(function (id) {
-        return this.arr.map(function(n) {
-          return Math.pow(id, n)
+      function runTask(id) {
+        worker.run(function (id) {
+          return this.arr.map(function(n) {
+            return Math.pow(id, n)
+          })
+        }, { arr: arr }, [ id ]).then(function(v) {
+          console.log(v)
         })
-      }, { arr: arr }, [ id ]).then(function(v) {
-        console.log(v)
-      })
-    }
+      }
 
-    for (var i = 0; i < 100; i += 1) {
-      runTask(i)
-    }
+      for (var i = 0; i < 100; i += 1) { runTask(i) }
     </script>
     <script>
       // asynchronous tasks
