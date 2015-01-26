@@ -328,11 +328,12 @@ Bind values will be available in the global namespace object (default to `env`)
 #### thread#flush()
 Return: `thread`
 
-Flush the thread cached data and scope environment.
-If you flush the data, you will need
+Flush the thread cached memory and scope environment.
 
 ```js
-var worker = thread({ env: { x: 2 } }).flush()
+var worker = thread({ env: { x: 2 } })
+console.log(Object.keys(worker.options.env).length) // -> 1
+worker.flush()
 console.log(Object.keys(worker.options.env).length) // -> 0
 ```
 
@@ -343,7 +344,8 @@ Flush running tasks promises and clean cached values
 
 ```js
 var worker = thread()
-worker.run(doLongTask)
+worker.run(longThreadTask)
+console.log(worker.pending()) // -> 1
 worker.flushTasks()
 console.log(worker.pending()) // -> 0
 ```
