@@ -6,7 +6,7 @@ through a clean and elegant [API](#api) with promise-based asynchronous handling
 You can run **tasks in a real thread** in a really simple way,
 with an elegant programatic aproach and great state handling
 
-It provides awesome **features** such as **data binding serialization**, **cross-scope arguments passing**, **asynchronous tasks**, **require external scripts** easly in the thread and includes built-in support to create a **pool of threads** to distribute the
+It provides useful **features** such as **data binding serialization**, **cross-scope arguments passing**, **asynchronous tasks**, **require external scripts** easly in the thread and includes built-in support to create a **pool of threads** to distribute the
 task load across multiple workers transparently using a simple best load availability schedule algorithm
 
 It uses [Web Workers](http://en.wikipedia.org/wiki/Web_worker) to create real threads,
