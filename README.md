@@ -219,29 +219,29 @@ Any feedback will be really appreciated
 
 ```js
 // create a pool with a maximum of 10 threads
-var pool = thread({ env: { x: 2 } }).pool(10)
+var pool = thread({ env: { users: 2 } }).pool(10)
 var count = 1
-var tasks = 50
+var maxTasks = 50
 
 function runAsyncTask(num) {
-  setTimeout(function () {
-    pool.run(function (done) {
-      setTimeout(function () {
-        done(null, env.x * 2)
-      }, Math.random() * 1000)
+  pool.run(function (done) {
+      countUsers(function (usersLength) {
+        done(null, env.users + usersLength)
+      })
     }).then(function (result) {
       console.log('Task:', num)
       console.log('Result:', result)
       console.log('Used threads:', pool.threadPool.length)
-      if (count++ === tasks) {
+      if (count++ === maxTasks) {
         console.log('Tasks finished')
-        pool.kill() // kill all pool threads
+        pool.kill() // kill all the threads in the pool
       }
     })
   }, Math.random() * 1000)
 }
 
-for (var i = 0; i < tasks; i += 1) {
+while (var i = 0; i < maxTasks) {
+  i += 1
   runAsyncTask(i)
 }
 ```
