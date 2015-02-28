@@ -6,8 +6,8 @@ through a clean and elegant promise-based [API](#api).
 You can run **tasks in real threads** in a really simple way,
 with an elegant programatic aproach and graceful state handling
 
-It provides useful **features** such as **data binding serialization**, **cross-scope arguments passing**, **asynchronous tasks**, **require external scripts** in the thread and including built-in support to create a **pool of threads** to distribute multiple background
-tasks across multiple workers transparently using a simple load availability schedule algorithm
+It provides useful **features** such as **data binding serialization**, **cross-scope arguments passing**, **asynchronous tasks**, **require external scripts** in the thread and includes built-in support to create a **pool of threads** to distribute multiple background
+tasks across multiple workers transparently using a simple task load availability algorithm
 
 It uses [Web Workers](http://en.wikipedia.org/wiki/Web_worker) to create real threads,
 but provides fallback support for older browsers based on an `iframe` hack (now you can be safe in IE9 and other older browsers)
