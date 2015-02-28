@@ -4,7 +4,7 @@
 **simplifies JavaScript parallel computing in browser** environments
 through a clean and elegant promise-based [API](#api).
 You can run **tasks in real threads** in a really simple way,
-with an elegant programatic aproach and great state handling
+with an elegant programatic aproach and greceful state handling
 
 It provides useful **features** such as **data binding serialization**, **cross-scope arguments passing**, **asynchronous tasks**, **require external scripts** in the thread and including built-in support to create a **pool of threads** to distribute multiple background
 tasks across multiple workers transparently using a simple load availability schedule algorithm
