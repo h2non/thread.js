@@ -118,13 +118,14 @@ You must define the CORS headers properly in the server
 - [Origin policy restrictions](http://www.html5rocks.com/en/tutorials/security/content-security-policy/)
 - [Specification](http://www.whatwg.org/specs/web-apps/current-work/multipage/workers.html)
 
-## Threads limitations
+## Web Worker limitations
 
-You should be aware of some limitations while using threads
+You should be aware of some limitations while using Web Worker (aka threads)
 
-Threads has its own isolated scope, so that means each thread has its own memory stack space.
-That's means you must explicitly bind values or functions
-to the thread in order to consum them inside the thread scope.
+Web Workers are by design strongly isolated. 
+That means each worker has its own isolated scope and memory stack space.
+In other words, you must explicitly bind values or functions
+to the thread in order to have access and consum them inside the worker scope.
 Any passed value to the thread scope will be cloned (it will be passed by value, not by reference),
 so mutation is not possible between scopes since memory space has no synchronization
 
